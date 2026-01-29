@@ -48,7 +48,7 @@ android.applicationVariants.all {
     outputs.all {
         val outDir = File(rootDir, "out")
         val mappingPath = File(outDir, "mapping").absolutePath
-        val dexPath = "${rootProject.project(":axerish").projectDir}/src/main/assets"
+        val dexPath = "${rootProject.project(":axerish").projectDir}/src/main/assets/scripts"
 
 
         assembleProvider.get().doLast {

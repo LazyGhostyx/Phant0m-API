@@ -76,12 +76,12 @@ object Axerish {
 
         // permission AFTER copy
         try {
-            if (copyAssetIfDifferent(context, "axerish", axerish_path)) {
+            if (copyAssetIfDifferent(context, "scripts/axerish", axerish_path)) {
                 Os.chmod(axerish_path.absolutePath, "755".toInt(8))
             } else {
                 Log.i(TAG, "Axerish already exists")
             }
-            if (copyAssetIfDifferent(context, "shell_axerish.dex", dex_path)) {
+            if (copyAssetIfDifferent(context, "scripts/shell_axerish.dex", dex_path)) {
                 Os.chmod(dex_path.absolutePath, "400".toInt(8))
             } else {
                 Log.i(TAG, "Axerish dex already exists")
@@ -95,8 +95,8 @@ object Axerish {
         Log.i(TAG, "Initializing Axerish (shell+checksum) for $packageName")
 
         val baseDir = "${'/'}data/data/${packageName}/files/bin"
-        axerish_path = File(baseDir, "axerish")
-        dex_path = File(baseDir, "shell_axerish.dex")
+        axerish_path = File(baseDir, "scripts/axerish")
+        dex_path = File(baseDir, "scripts/shell_axerish.dex")
 
         val cmd = $$"""
             set -e
