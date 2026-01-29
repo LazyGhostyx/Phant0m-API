@@ -37,3 +37,5 @@ kotlin {
 
 dependencies {
 }
+
+extra["publishLibrary"] = true
