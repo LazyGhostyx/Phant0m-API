@@ -35,23 +35,18 @@ import moe.shizuku.server.IShizukuService;
 
 public class Shizuku {
 
-    private static final List<ListenerHolder<OnBinderReceivedListener>> RECEIVED_LISTENERS = new ArrayList<>();
-    private static final List<ListenerHolder<OnBinderDeadListener>> DEAD_LISTENERS = new ArrayList<>();
-    private static final List<ListenerHolder<OnRequestPermissionResultListener>> PERMISSION_LISTENERS = new ArrayList<>();
-    private static final Handler MAIN_HANDLER = new Handler(Looper.getMainLooper());
     private static IBinder binder;
     private static IShizukuService service;
+
     private static int serverUid = -1;
     private static int serverApiVersion = -1;
     private static int serverPatchVersion = -1;
     private static String serverContext = null;
     private static boolean permissionGranted = false;
-    private static boolean shouldShowRequestPermissionRationale = false;    private static final IBinder.DeathRecipient DEATH_RECIPIENT = () -> {
-        binderReady = false;
-        onBinderReceived(null, null);
-    };
+    private static final List<ListenerHolder<OnBinderReceivedListener>> RECEIVED_LISTENERS = new ArrayList<>();
     private static boolean preV11 = false;
     private static boolean binderReady = false;
+
     private static final IShizukuApplication SHIZUKU_APPLICATION = new IShizukuApplication.Stub() {
 
         @Override
@@ -77,49 +72,12 @@ public class Shizuku {
             // non-app
         }
     };
-
-    private static boolean attachApplicationV13(IBinder binder, String packageName) throws RemoteException {
-        boolean result;
-
-        Bundle args = new Bundle();
-        args.putInt(ATTACH_APPLICATION_API_VERSION, ShizukuApiConstants.SERVER_VERSION);
-        args.putString(ATTACH_APPLICATION_PACKAGE_NAME, packageName);
-
-        Parcel data = Parcel.obtain();
-        Parcel reply = Parcel.obtain();
-        try {
-            data.writeInterfaceToken(ShizukuApiConstants.BINDER_DESCRIPTOR);
-            data.writeStrongBinder(SHIZUKU_APPLICATION.asBinder());
-            data.writeInt(1);
-            args.writeToParcel(data, 0);
-            result = binder.transact(18 /*IShizukuService.Stub.TRANSACTION_attachApplication*/, data, reply, 0);
-            reply.readException();
-        } finally {
-            reply.recycle();
-            data.recycle();
-        }
-
-        return result;
-    }
-
-    private static boolean attachApplicationV11(IBinder binder, String packageName) throws RemoteException {
-        boolean result;
-
-        Parcel data = Parcel.obtain();
-        Parcel reply = Parcel.obtain();
-        try {
-            data.writeInterfaceToken(ShizukuApiConstants.BINDER_DESCRIPTOR);
-            data.writeStrongBinder(SHIZUKU_APPLICATION.asBinder());
-            data.writeString(packageName);
-            result = binder.transact(14 /*IShizukuService.Stub.TRANSACTION_attachApplication*/, data, reply, 0);
-            reply.readException();
-        } finally {
-            reply.recycle();
-            data.recycle();
-        }
-
-        return result;
-    }
+    private static final List<ListenerHolder<OnBinderDeadListener>> DEAD_LISTENERS = new ArrayList<>();    private static final IBinder.DeathRecipient DEATH_RECIPIENT = () -> {
+        binderReady = false;
+        onBinderReceived(null, null);
+    };
+    private static final List<ListenerHolder<OnRequestPermissionResultListener>> PERMISSION_LISTENERS = new ArrayList<>();
+    private static final Handler MAIN_HANDLER = new Handler(Looper.getMainLooper());
 
     @RestrictTo(LIBRARY_GROUP_PREFIX)
     public static void onBinderReceived(@Nullable IBinder newBinder, String packageName) {
@@ -159,6 +117,127 @@ public class Shizuku {
                 binderReady = true;
                 scheduleBinderReceivedListeners();
             }
+        }
+    }
+    private static boolean shouldShowRequestPermissionRationale = false;
+
+    private static boolean attachApplicationV13(IBinder binder, String packageName) throws RemoteException {
+        boolean result;
+
+        Bundle args = new Bundle();
+        args.putInt(ATTACH_APPLICATION_API_VERSION, ShizukuApiConstants.SERVER_VERSION);
+        args.putString(ATTACH_APPLICATION_PACKAGE_NAME, packageName);
+
+        Parcel data = Parcel.obtain();
+        Parcel reply = Parcel.obtain();
+        try {
+            data.writeInterfaceToken("moe.shizuku.server.IShizukuService");
+            data.writeStrongBinder(SHIZUKU_APPLICATION.asBinder());
+            data.writeInt(1);
+            args.writeToParcel(data, 0);
+            result = binder.transact(18 /*IShizukuService.Stub.TRANSACTION_attachApplication*/, data, reply, 0);
+            reply.readException();
+        } finally {
+            reply.recycle();
+            data.recycle();
+        }
+
+        return result;
+    }
+
+    private static boolean attachApplicationV11(IBinder binder, String packageName) throws RemoteException {
+        boolean result;
+
+        Parcel data = Parcel.obtain();
+        Parcel reply = Parcel.obtain();
+        try {
+            data.writeInterfaceToken("moe.shizuku.server.IShizukuService");
+            data.writeStrongBinder(SHIZUKU_APPLICATION.asBinder());
+            data.writeString(packageName);
+            result = binder.transact(14 /*IShizukuService.Stub.TRANSACTION_attachApplication*/, data, reply, 0);
+            reply.readException();
+        } finally {
+            reply.recycle();
+            data.recycle();
+        }
+
+        return result;
+    }
+
+    /**
+     * Check if the binder is alive.
+     * <p>
+     * Normal apps should use listeners rather calling this method everytime.
+     *
+     * @see #addBinderReceivedListener(OnBinderReceivedListener)
+     * @see #addBinderReceivedListenerSticky(OnBinderReceivedListener)
+     * @see #addBinderDeadListener(OnBinderDeadListener)
+     */
+    public static boolean pingBinder() {
+        IBinder b = binder;
+        return binder != null && binder.pingBinder();
+    }
+
+    /**
+     * Call {@link IBinder#transact(int, Parcel, Parcel, int)} at remote service.
+     * <p>
+     * Use {@link ShizukuBinderWrapper} to wrap the original binder.
+     *
+     * @see ShizukuBinderWrapper
+     */
+    public static void transactRemote(@NonNull Parcel data, @Nullable Parcel reply, int flags) {
+        try {
+            requireService().asBinder().transact(ShizukuApiConstants.BINDER_TRANSACTION_transact, data, reply, flags);
+        } catch (RemoteException e) {
+            throw rethrowAsRuntimeException(e);
+        }
+    }
+
+    /**
+     * Start a new process at remote service, parameters are passed to {@link Runtime#exec(String, String[], java.io.File)}.
+     * <br>From version 11, like "su", the process will be killed when the caller process is dead. If you have complicated
+     * requirements, use {@link Shizuku#bindUserService(UserServiceArgs, ServiceConnection)}.
+     * <p>
+     * Note, you may need to read/write streams from RemoteProcess in different threads.
+     * </p>
+     *
+     * @return RemoteProcess holds the binder of remote process
+     * @deprecated This method should only be used when you are transitioning from "su".
+     * Use {@link Shizuku#transactRemote(Parcel, Parcel, int)} for binder calls and {@link Shizuku#bindUserService(UserServiceArgs, ServiceConnection)}
+     * for complicated requirements.
+     * <p>This method is planned to be removed from Shizuku API 14.
+     */
+    private static ShizukuRemoteProcess newProcess(@NonNull String[] cmd, @Nullable String[] env, @Nullable String dir) {
+        try {
+            return new ShizukuRemoteProcess(requireService().newProcess(cmd, env, dir));
+        } catch (RemoteException e) {
+            throw rethrowAsRuntimeException(e);
+        }
+    }
+
+    /**
+     * Check if self has permission.
+     *
+     * @return Either {@link android.content.pm.PackageManager#PERMISSION_GRANTED}
+     * or {@link android.content.pm.PackageManager#PERMISSION_DENIED}.
+     * @since Added from version 11
+     */
+    public static int checkSelfPermission() {
+        if (permissionGranted) return PackageManager.PERMISSION_GRANTED;
+        try {
+            permissionGranted = requireService().checkSelfPermission();
+        } catch (RemoteException e) {
+            throw rethrowAsRuntimeException(e);
+        }
+        return permissionGranted ? PackageManager.PERMISSION_GRANTED : PackageManager.PERMISSION_DENIED;
+    }
+
+    @RestrictTo(LIBRARY_GROUP_PREFIX)
+    public static int getFlagsForUid(int uid, int mask) {
+        try {
+            return requireService().getFlagsForUid(uid, mask);
+        } catch (RemoteException e) {
+            throw rethrowAsRuntimeException(e);
         }
     }
 
@@ -393,58 +472,26 @@ public class Shizuku {
         return binder;
     }
 
-    /**
-     * Check if the binder is alive.
-     * <p>
-     * Normal apps should use listeners rather calling this method everytime.
-     *
-     * @see #addBinderReceivedListener(OnBinderReceivedListener)
-     * @see #addBinderReceivedListenerSticky(OnBinderReceivedListener)
-     * @see #addBinderDeadListener(OnBinderDeadListener)
-     */
-    public static boolean pingBinder() {
-        return binder != null && binder.pingBinder();
-    }
-
-    private static RuntimeException rethrowAsRuntimeException(String message, RemoteException e) {
-        return new RuntimeException(message, e);
+    @RestrictTo(LIBRARY_GROUP_PREFIX)
+    public static void updateFlagsForUid(int uid, int mask, int value) {
+        try {
+            requireService().updateFlagsForUid(uid, mask, value);
+        } catch (RemoteException e) {
+            throw rethrowAsRuntimeException(e);
+        }
     }
 
     private static RuntimeException rethrowAsRuntimeException(RemoteException e) {
         return new RuntimeException(e);
     }
 
-    /**
-     * Call {@link IBinder#transact(int, Parcel, Parcel, int)} at remote service.
-     * <p>
-     * Use {@link ShizukuBinderWrapper} to wrap the original binder.
-     *
-     * @see ShizukuBinderWrapper
-     */
-    public static void transactRemote(@NonNull Parcel data, @Nullable Parcel reply, int flags) {
-        try {
-            requireService().asBinder().transact(ShizukuApiConstants.BINDER_TRANSACTION_transact, data, reply, flags);
-        } catch (RemoteException e) {
-            throw rethrowAsRuntimeException("Shizuku", e);
-        }
+    @RestrictTo(LIBRARY_GROUP_PREFIX)
+    public static int getServerPatchVersion() {
+        return serverPatchVersion;
     }
 
-    /**
-     * Start a new process at remote service, parameters are passed to {@link Runtime#exec(String, String[], java.io.File)}.
-     * <br>From version 11, like "su", the process will be killed when the caller process is dead. If you have complicated
-     * requirements, use {@link Shizuku#bindUserService(UserServiceArgs, ServiceConnection)}.
-     * <p>
-     * Note, you may need to read/write streams from RemoteProcess in different threads.
-     * </p>
-     *
-     * @return RemoteProcess holds the binder of remote process
-     */
-    public static ShizukuRemoteProcess newProcess(@NonNull String[] cmd, @Nullable String[] env, @Nullable String dir) {
-        try {
-            return new ShizukuRemoteProcess(requireService().newProcess(cmd, env, dir));
-        } catch (RemoteException e) {
-            throw rethrowAsRuntimeException(e);
-        }
+    public interface OnBinderReceivedListener {
+        void onBinderReceived();
     }
 
     /**
@@ -525,6 +572,10 @@ public class Shizuku {
             return null;
         }
         return serverContext;
+    }
+
+    public interface OnBinderDeadListener {
+        void onBinderDead();
     }
 
     /**
@@ -693,21 +744,16 @@ public class Shizuku {
         }
     }
 
-    /**
-     * Check if self has permission.
-     *
-     * @return Either {@link PackageManager#PERMISSION_GRANTED}
-     * or {@link PackageManager#PERMISSION_DENIED}.
-     * @since Added from version 11
-     */
-    public static int checkSelfPermission() {
-        if (permissionGranted) return PackageManager.PERMISSION_GRANTED;
-        try {
-            permissionGranted = requireService().checkSelfPermission();
-        } catch (RemoteException e) {
-            throw rethrowAsRuntimeException(e);
-        }
-        return permissionGranted ? PackageManager.PERMISSION_GRANTED : PackageManager.PERMISSION_DENIED;
+    public interface OnRequestPermissionResultListener {
+
+        /**
+         * Callback for the result from requesting permission.
+         *
+         * @param requestCode The code passed in {@link #requestPermission(int)}.
+         * @param grantResult The grant result for which is either {@link android.content.pm.PackageManager#PERMISSION_GRANTED}
+         *                    or {@link android.content.pm.PackageManager#PERMISSION_DENIED}.
+         */
+        void onRequestPermissionResult(int requestCode, int grantResult);
     }
 
     /**
@@ -725,6 +771,8 @@ public class Shizuku {
         }
         return shouldShowRequestPermissionRationale;
     }
+
+    // --------------------- non-app ----------------------
 
     @RestrictTo(LIBRARY_GROUP_PREFIX)
     public static void exit() {
@@ -751,48 +799,6 @@ public class Shizuku {
         } catch (RemoteException e) {
             throw rethrowAsRuntimeException(e);
         }
-    }
-
-    public static int getFlagsForUid(int uid, int mask) {
-        try {
-            return requireService().getFlagsForUid(uid, mask);
-        } catch (RemoteException e) {
-            throw rethrowAsRuntimeException(e);
-        }
-    }
-
-    public static void updateFlagsForUid(int uid, int mask, int value) {
-        try {
-            requireService().updateFlagsForUid(uid, mask, value);
-        } catch (RemoteException e) {
-            throw rethrowAsRuntimeException(e);
-        }
-    }
-
-    public static int getServerPatchVersion() {
-        return serverPatchVersion;
-    }
-
-    // --------------------- non-app ----------------------
-
-    public interface OnBinderReceivedListener {
-        void onBinderReceived();
-    }
-
-    public interface OnBinderDeadListener {
-        void onBinderDead();
-    }
-
-    public interface OnRequestPermissionResultListener {
-
-        /**
-         * Callback for the result from requesting permission.
-         *
-         * @param requestCode The code passed in {@link #requestPermission(int)}.
-         * @param grantResult The grant result for which is either {@link PackageManager#PERMISSION_GRANTED}
-         *                    or {@link PackageManager#PERMISSION_DENIED}.
-         */
-        void onRequestPermissionResult(int requestCode, int grantResult);
     }
 
     private record ListenerHolder<T>(T listener, Handler handler) {

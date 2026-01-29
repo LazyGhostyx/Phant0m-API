@@ -2,7 +2,10 @@ package rikka.rish;
 
 import android.annotation.SuppressLint;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.util.Log;
+
+import moe.shizuku.server.IShizukuService;
 
 public class RishConfig {
 
@@ -10,13 +13,21 @@ public class RishConfig {
     static final int TRANSACTION_setWindowSize = 1;
     static final int TRANSACTION_getExitCode = 2;
     private static final String TAG = "RISHConfig";
-    private static IBinder binder;
+    private static IShizukuService shizukuService;
     private static String interfaceToken;
     private static int transactionCodeStart;
     private static String libraryPath;
 
     static IBinder getBinder() {
-        return binder;
+        return shizukuService.asBinder();
+    }
+
+    static IShizukuService getShizukuService() {
+        return shizukuService;
+    }
+
+    static RemoteProcess newProcess(String[] cmd) throws RemoteException {
+        return new RemoteProcess(getShizukuService().newProcess(cmd, null, null));
     }
 
     static String getInterfaceToken() {
@@ -49,7 +60,7 @@ public class RishConfig {
 
     public static void init(IBinder binder, String interfaceToken, int transactionCodeStart) {
         Log.d(TAG, "init (client) " + binder + " " + interfaceToken + " " + transactionCodeStart);
-        RishConfig.binder = binder;
+        RishConfig.shizukuService = IShizukuService.Stub.asInterface(binder);
         RishConfig.interfaceToken = interfaceToken;
         RishConfig.transactionCodeStart = transactionCodeStart;
         loadLibrary();

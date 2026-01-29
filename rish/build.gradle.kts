@@ -51,8 +51,6 @@ kotlin {
 
 dependencies {
     implementation(project(":aidl"))
-    implementation(project(":api"))
-    implementation(project(":shared"))
     implementation(libs.androidx.annotation)
     implementation(libs.libcxx)
 }

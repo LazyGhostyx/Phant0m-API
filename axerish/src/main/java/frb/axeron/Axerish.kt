@@ -95,8 +95,8 @@ object Axerish {
         Log.i(TAG, "Initializing Axerish (shell+checksum) for $packageName")
 
         val baseDir = "${'/'}data/data/${packageName}/files/bin"
-        axerish_path = File(baseDir, "scripts/axerish")
-        dex_path = File(baseDir, "scripts/shell_axerish.dex")
+        axerish_path = File(baseDir, "axerish")
+        dex_path = File(baseDir, "shell_axerish.dex")
 
         val cmd = $$"""
             set -e
@@ -128,15 +128,13 @@ object Axerish {
                 fi
     
                 echo "Updating $ASSET_NAME"
-                unzip -o "$APK" "assets/$ASSET_NAME" -d $$baseDir
-                mv "$$baseDir/assets/$ASSET_NAME" "$OUT_FILE"
+                unzip -oj "$APK" "assets/$ASSET_NAME" -d $$baseDir
                 chmod $MODE "$OUT_FILE"
             }
     
-            check_and_extract axerish $${axerish_path.absolutePath} 755
-            check_and_extract shell_axerish.dex $${dex_path.absolutePath} 400
+            check_and_extract "scripts/axerish" "$${axerish_path.absolutePath}" 755
+            check_and_extract "scripts/shell_axerish.dex" "$${dex_path.absolutePath}" 400
     
-            rmdir $$baseDir/assets 2>/dev/null || true
             echo "Axerish init done"
         """.trimIndent()
 

@@ -16,9 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import rikka.shizuku.Shizuku;
-import rikka.shizuku.ShizukuRemoteProcess;
-
 public class RishTerminal {
 
     private static final String TAG = "RishTerminal";
@@ -45,7 +42,7 @@ public class RishTerminal {
                 this.argv = newArgv;
             }
 
-            ShizukuRemoteProcess process = Shizuku.newProcess(this.argv, null, null);
+            RemoteProcess process = RishConfig.newProcess(this.argv);
 
             new Thread(() -> {
                 try (
