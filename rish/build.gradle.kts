@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -6,14 +5,8 @@ plugins {
 
 android {
     namespace = "frb.axeron.rish"
-    compileSdk {
-        version = release(36)
-
-    }
 
     defaultConfig {
-        minSdk = 26
-
         consumerProguardFiles("consumer-rules.pro")
         externalNativeBuild {
             cmake {
@@ -34,18 +27,6 @@ android {
     }
     buildFeatures {
         prefab = true
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-    buildToolsVersion = "36.0.0"
-    ndkVersion = "29.0.14206865"
-}
-
-kotlin {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_21)
     }
 }
 

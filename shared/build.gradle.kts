@@ -1,21 +1,12 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
 }
 
-apply(from = "../manifest.gradle.kts")
-
 android {
     namespace = "frb.axeron.shared"
-    compileSdk {
-        version = release(36)
-    }
 
     defaultConfig {
-        minSdk = 27
-
         consumerProguardFiles("consumer-rules.pro")
 
         buildConfigField(
@@ -43,16 +34,6 @@ android {
         release {
             isMinifyEnabled = false
         }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-}
-
-kotlin {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_21)
     }
 }
 

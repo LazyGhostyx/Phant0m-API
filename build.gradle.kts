@@ -1,3 +1,8 @@
+import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.gradle.LibraryExtension
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
+
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
@@ -19,8 +24,47 @@ val gitCommitCount = providers.exec {
 }.standardOutput.asText.get().trim().toInt()
 val verCode = findProperty("api_version_code") as Int
 val verName = "${findProperty("api_version_name")}.r${gitCommitCount}"
-extra["version_code"] = verCode
-extra["version_name"] = verName
+
+subprojects {
+    plugins.withId("com.android.application") {
+        extensions.configure<ApplicationExtension> {
+            compileSdk = 36
+            buildToolsVersion = "36.0.0"
+            ndkVersion = "29.0.14206865"
+            defaultConfig {
+                minSdk = 26
+                targetSdk = 36
+                versionCode = verCode
+                versionName = verName
+            }
+            compileOptions {
+                sourceCompatibility = JavaVersion.VERSION_21
+                targetCompatibility = JavaVersion.VERSION_21
+            }
+        }
+    }
+    plugins.withId("com.android.library") {
+        extensions.configure<LibraryExtension> {
+            compileSdk = 36
+            buildToolsVersion = "36.0.0"
+            ndkVersion = "29.0.14206865"
+            defaultConfig {
+                minSdk = 26
+            }
+            compileOptions {
+                sourceCompatibility = JavaVersion.VERSION_21
+                targetCompatibility = JavaVersion.VERSION_21
+            }
+        }
+    }
+    plugins.withId("org.jetbrains.kotlin.android") {
+        extensions.configure<KotlinAndroidProjectExtension> {
+            compilerOptions {
+                jvmTarget.set(JvmTarget.JVM_21)
+            }
+        }
+    }
+}
 
 subprojects {
     plugins.withId("com.android.library") {
@@ -45,6 +89,8 @@ subprojects {
             ====================
             """.trimIndent()
             )
+
+            val groupIdBase = "dev.frb.axeron"
 
             val publishLibrary =
                 (findProperty("publishLibrary") as? Boolean) ?: false
@@ -82,7 +128,5 @@ subprojects {
     }
 
 }
-
-val groupIdBase = "dev.frb.axeron"
 
 
