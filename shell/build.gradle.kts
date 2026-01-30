@@ -14,6 +14,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -60,6 +61,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.annotation.jvm)
     implementation(libs.rikka.hidden.compat)
     compileOnly(libs.rikka.hidden.stub)
     compileOnly(project(":server-shared"))
