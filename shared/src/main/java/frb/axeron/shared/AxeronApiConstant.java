@@ -17,7 +17,7 @@ public class AxeronApiConstant {
     public interface folder {
         String ROOT = "/";
         String TMP = "data/local/tmp/";
-        String SHELL = "data/data/com.android.shell/";
+        String ADB = "data/adb/";
         String SHELL_DE = "data/user_de/0/com.android.shell/";
         String PARENT = "axeron/";
         String PLUGIN = "plugins/";

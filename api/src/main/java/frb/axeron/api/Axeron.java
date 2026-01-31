@@ -258,8 +258,8 @@ public class Axeron {
         if (axeronInfo != null) return axeronInfo;
         try {
             axeronInfo = new AxeronInfo(requireService().getServerInfo());
-        } catch (RemoteException e) {
-            Log.e(TAG, "getInfo", e);
+        } catch (Exception e) {
+            return new AxeronInfo();
         }
         return axeronInfo;
 

@@ -2,7 +2,6 @@ package frb.axeron.server
 
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
-import android.os.Binder
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
@@ -28,6 +27,9 @@ abstract class Service : IAxeronService.Stub(), AxeronInterface {
 
     companion object {
         protected const val TAG: String = "AxeronService"
+
+        @JvmStatic
+        protected val isRoot = Os.getuid() == 0
 
         @JvmStatic
         protected val LOGGER: Logger = Logger(TAG)
@@ -76,7 +78,7 @@ abstract class Service : IAxeronService.Stub(), AxeronInterface {
     @Throws(RemoteException::class)
     override fun getPlugins(): ParcelableListSlice<PluginInfo?>? {
         val pluginsPath =
-            PathHelper.getShellPath(AxeronApiConstant.folder.PARENT_PLUGIN).absolutePath
+            PathHelper.getWorkingPath(isRoot,AxeronApiConstant.folder.PARENT_PLUGIN).absolutePath
         val plugins = readAllPlugin(pluginsPath)
         return ParcelableListSlice<PluginInfo?>(plugins)
     }
@@ -84,7 +86,7 @@ abstract class Service : IAxeronService.Stub(), AxeronInterface {
     @Throws(RemoteException::class)
     override fun getPluginById(id: String): PluginInfo? {
         val dir =
-            File(PathHelper.getShellPath(AxeronApiConstant.folder.PARENT_PLUGIN).absolutePath, id)
+            File(PathHelper.getWorkingPath(isRoot,AxeronApiConstant.folder.PARENT_PLUGIN).absolutePath, id)
         return getPluginByDir(dir)
     }
 
@@ -121,7 +123,7 @@ abstract class Service : IAxeronService.Stub(), AxeronInterface {
 
         val pluginId = moduleProp.id
         val updateDir =
-            File(PathHelper.getShellPath(AxeronApiConstant.folder.PARENT_PLUGIN_UPDATE), pluginId)
+            File(PathHelper.getWorkingPath(isRoot,AxeronApiConstant.folder.PARENT_PLUGIN_UPDATE), pluginId)
         val updateFiles = updateDir.listFiles()?.map { it.name }?.toSet() ?: emptySet()
         val isUpdate = updateFiles.isNotEmpty()
 

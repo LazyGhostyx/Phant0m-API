@@ -26,4 +26,8 @@ data class AxeronInfo(
         return isRunning() && !serverInfo.permission
     }
 
+    fun isRoot(): Boolean {
+        return serverInfo.uid == 0
+    }
+
 }

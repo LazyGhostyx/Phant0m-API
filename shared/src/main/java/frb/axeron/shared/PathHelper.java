@@ -15,7 +15,17 @@ public class PathHelper {
         return new File(Environment.getExternalStorageDirectory(), folderName);
     }
 
-    public static File getShellPath(String folderName) {
+    @Deprecated
+    public static File getWorkingPath(String folderName) {
+        if (folderName == null) return new File(AxeronApiConstant.folder.SHELL_DE);
+        return new File(AxeronApiConstant.folder.SHELL_DE, folderName);
+    }
+
+    public static File getWorkingPath(boolean rootMode, String folderName) {
+        if (rootMode) {
+            if (folderName == null) return new File(AxeronApiConstant.folder.ADB);
+            return new File(AxeronApiConstant.folder.ADB, folderName);
+        }
         if (folderName == null) return new File(AxeronApiConstant.folder.SHELL_DE);
         return new File(AxeronApiConstant.folder.SHELL_DE, folderName);
     }

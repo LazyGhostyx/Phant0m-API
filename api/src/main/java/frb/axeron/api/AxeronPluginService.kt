@@ -38,12 +38,15 @@ object AxeronPluginService {
     val BASEAPK: String
         get() = application.applicationInfo.sourceDir
 
+    val ROOT_MODE
+        get() = Axeron.getAxeronInfo().isRoot()
+
     val AXERONBIN: String
-        get() = PathHelper.getShellPath(AxeronApiConstant.folder.PARENT_BINARY).absolutePath
+        get() = PathHelper.getWorkingPath(ROOT_MODE,AxeronApiConstant.folder.PARENT_BINARY).absolutePath
     val PLUGINDIR: String
-        get() = PathHelper.getShellPath(AxeronApiConstant.folder.PARENT_PLUGIN).absolutePath
+        get() = PathHelper.getWorkingPath(ROOT_MODE,AxeronApiConstant.folder.PARENT_PLUGIN).absolutePath
     val PLUGINUPDATEDIR: String
-        get() = PathHelper.getShellPath(AxeronApiConstant.folder.PARENT_PLUGIN_UPDATE).absolutePath
+        get() = PathHelper.getWorkingPath(ROOT_MODE,AxeronApiConstant.folder.PARENT_PLUGIN_UPDATE).absolutePath
 
     val axFS
         get() = Axeron.newFileService()!!
