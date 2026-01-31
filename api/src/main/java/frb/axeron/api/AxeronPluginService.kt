@@ -565,9 +565,8 @@ object AxeronPluginService {
             if (axFS.exists(dstFile.absolutePath)) continue
 
             val cmd =
-                "$BUSYBOX unzip -p $BASEAPK assets/scripts/$filename > ${dstFile.absolutePath} " +
-                        "&& chmod 755 ${dstFile.absolutePath} " +
-                        "&& chown 2000:2000 ${dstFile.absolutePath}; dos2unix ${dstFile.absolutePath}"
+                "$BUSYBOX unzip -p $BASEAPK assets/scripts/$filename > ${dstFile.absolutePath}" +
+                        " && chmod 755 ${dstFile.absolutePath} && dos2unix ${dstFile.absolutePath}"
 
             val result = execWithIO(cmd, hideStderr = false)
 
@@ -591,9 +590,8 @@ object AxeronPluginService {
             if (axFS.exists(dstBusyBox.absolutePath) && axFS.exists(dstResetProp.absolutePath)) return@withContext true
 
             val cmdBB =
-                "cp $BUSYBOX ${dstBusyBox.absolutePath} && chmod 755 ${dstBusyBox.absolutePath} " +
-                        "&& chown 2000:2000 ${dstBusyBox.absolutePath} " +
-                        "&& ${dstBusyBox.absolutePath} --install -s $AXERONBIN"
+                "cp $BUSYBOX ${dstBusyBox.absolutePath} && chmod 755 ${dstBusyBox.absolutePath}" +
+                        " && ${dstBusyBox.absolutePath} --install -s $AXERONBIN"
 
             val rBB = execWithIO(cmdBB, useBusybox = false, hideStderr = false)
             if (!rBB.isSuccess()) {
@@ -602,8 +600,7 @@ object AxeronPluginService {
             }
 
             val cmdRP =
-                "cp $RESETPROP ${dstResetProp.absolutePath} && chmod 755 ${dstResetProp.absolutePath} " +
-                        "&& chown 2000:2000 ${dstResetProp.absolutePath}"
+                "cp $RESETPROP ${dstResetProp.absolutePath} && chmod 755 ${dstResetProp.absolutePath}"
 
             val rRP = execWithIO(cmdRP, useBusybox = false, hideStderr = false)
             if (!rRP.isSuccess()) {
