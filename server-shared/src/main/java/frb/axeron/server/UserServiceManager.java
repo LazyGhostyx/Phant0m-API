@@ -1,14 +1,16 @@
-package rikka.shizuku.server;
+package frb.axeron.server;
 
-import static rikka.shizuku.ShizukuApiConstants.USER_SERVICE_ARG_COMPONENT;
-import static rikka.shizuku.ShizukuApiConstants.USER_SERVICE_ARG_DAEMON;
-import static rikka.shizuku.ShizukuApiConstants.USER_SERVICE_ARG_DEBUGGABLE;
-import static rikka.shizuku.ShizukuApiConstants.USER_SERVICE_ARG_NO_CREATE;
-import static rikka.shizuku.ShizukuApiConstants.USER_SERVICE_ARG_PROCESS_NAME;
-import static rikka.shizuku.ShizukuApiConstants.USER_SERVICE_ARG_REMOVE;
-import static rikka.shizuku.ShizukuApiConstants.USER_SERVICE_ARG_TAG;
-import static rikka.shizuku.ShizukuApiConstants.USER_SERVICE_ARG_USE_32_BIT_APP_PROCESS;
-import static rikka.shizuku.ShizukuApiConstants.USER_SERVICE_ARG_VERSION_CODE;
+import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_COMPONENT;
+import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_DAEMON;
+import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_DEBUGGABLE;
+import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_NO_CREATE;
+import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_PGID;
+import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_PROCESS_NAME;
+import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_REMOVE;
+import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_TAG;
+import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_TOKEN;
+import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_USE_32_BIT_APP_PROCESS;
+import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_VERSION_CODE;
 
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
@@ -29,12 +31,11 @@ import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import frb.axeron.server.util.AbiUtil;
+import frb.axeron.server.util.Logger;
+import frb.axeron.server.util.UserHandleCompat;
 import moe.shizuku.server.IShizukuServiceConnection;
 import rikka.hidden.compat.PackageManagerApis;
-import rikka.shizuku.ShizukuApiConstants;
-import rikka.shizuku.server.util.AbiUtil;
-import rikka.shizuku.server.util.Logger;
-import rikka.shizuku.server.util.UserHandleCompat;
 
 public abstract class UserServiceManager {
 
@@ -122,6 +123,7 @@ public abstract class UserServiceManager {
     }
 
     public int addUserService(IShizukuServiceConnection conn, Bundle options, int callingApiVersion) {
+        LOGGER.i("addUserServiceManager: uid=%d", Binder.getCallingUid());
         Objects.requireNonNull(conn, "connection is null");
         Objects.requireNonNull(options, "options is null");
 
@@ -151,8 +153,11 @@ public abstract class UserServiceManager {
         boolean use32Bits = options.getBoolean(USER_SERVICE_ARG_USE_32_BIT_APP_PROCESS, false);
         String key = packageName + ":" + (tag != null ? tag : className);
 
+        LOGGER.i("addUserServiceManager: uid=%d, key=%s", uid, key);
+
         synchronized (this) {
             UserServiceRecord record = getUserServiceRecordLocked(key);
+            LOGGER.i("Get service record %s", key);
             if (noCreate) {
                 LOGGER.i("No create for service record %s", key);
                 if (record != null && record.environment == environment) {
@@ -175,6 +180,7 @@ public abstract class UserServiceManager {
                     return 1;
                 }
             } else {
+                LOGGER.i("Create service record %s", key);
                 UserServiceRecord newRecord = createUserServiceRecordIfNeededLocked(record, key, versionCode, daemon, packageInfo);
                 newRecord.callbacks.register(conn);
                 LOGGER.i("Registering connection for service record %s (%s)", key, newRecord.token);
@@ -200,6 +206,8 @@ public abstract class UserServiceManager {
     private UserServiceRecord createUserServiceRecordIfNeededLocked(
             UserServiceRecord record, String key, int versionCode, boolean daemon, PackageInfo packageInfo) {
 
+        LOGGER.i("Create service record:%s key:%s version:%d, daemon:%s, apk:%s",record, key, versionCode, Boolean.toString(daemon), packageInfo);
+
         if (record != null) {
             if (record.versionCode != versionCode) {
                 LOGGER.v("Remove service record %s (%s) because version code not matched (old=%d, new=%d)", key, record.token, record.versionCode, versionCode);
@@ -219,8 +227,8 @@ public abstract class UserServiceManager {
             removeUserServiceLocked(record);
         }
 
-        record = new UserServiceRecord(versionCode, daemon, environment) {
 
+        record = new UserServiceRecord(versionCode, daemon, environment) {
             @Override
             public void removeSelf() {
                 synchronized (UserServiceManager.this) {
@@ -228,6 +236,7 @@ public abstract class UserServiceManager {
                 }
             }
         };
+        LOGGER.i("Create new service record:", record);
 
         String packageName = packageInfo.packageName;
         List<UserServiceRecord> list = packageUserServiceRecords.get(packageName);
@@ -236,10 +245,12 @@ public abstract class UserServiceManager {
             packageUserServiceRecords.put(packageName, list);
         }
         list.add(record);
+        LOGGER.i("Add service record %s (%s) to package %s", key, record.token, packageName);
 
         onUserServiceRecordCreated(record, packageInfo);
 
         userServiceRecords.put(key, record);
+        LOGGER.i("Created service record %s (%s)", key, record.token);
         assert packageInfo.applicationInfo != null;
         LOGGER.i("New service record %s (%s): version=%d, daemon=%s, apk=%s", key, record.token, versionCode, Boolean.toString(daemon), packageInfo.applicationInfo.sourceDir);
         return record;
@@ -299,8 +310,8 @@ public abstract class UserServiceManager {
 
     public void attachUserService(IBinder binder, Bundle options) {
         Objects.requireNonNull(binder, "binder is null");
-        String token = Objects.requireNonNull(options.getString(ShizukuApiConstants.USER_SERVICE_ARG_TOKEN), "token is null");
-        int pgid = options.getInt(ShizukuApiConstants.USER_SERVICE_ARG_PGID, -1);
+        String token = Objects.requireNonNull(options.getString(USER_SERVICE_ARG_TOKEN), "token is null");
+        int pgid = options.getInt(USER_SERVICE_ARG_PGID, -1);
 
 
         synchronized (this) {
@@ -308,13 +319,9 @@ public abstract class UserServiceManager {
         }
     }
 
-    public void onUserServiceRecordCreated(UserServiceRecord record, PackageInfo packageInfo) {
+    abstract public void onUserServiceRecordCreated(UserServiceRecord record, PackageInfo packageInfo);
 
-    }
-
-    public void onUserServiceRecordRemoved(UserServiceRecord record) {
-
-    }
+    abstract public void onUserServiceRecordRemoved(UserServiceRecord record);
 
     public void removeUserServicesForPackage(String packageName) {
         List<UserServiceRecord> list = packageUserServiceRecords.get(packageName);

@@ -1,4 +1,4 @@
-package rikka.shizuku.server;
+package frb.axeron.server;
 
 import android.app.ActivityThread;
 import android.content.Context;

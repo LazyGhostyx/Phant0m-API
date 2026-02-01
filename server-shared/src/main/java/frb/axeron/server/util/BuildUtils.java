@@ -1,9 +1,9 @@
-package rikka.shizuku.server.util;
+package frb.axeron.server.util;
 
 import android.os.Build;
 
 /**
- * TODO: Replace it with {@link rikka.shizuku.server.util.BuildUtils}.
+ * TODO: Replace it with {@link BuildUtils}.
  */
 public class BuildUtils {
 

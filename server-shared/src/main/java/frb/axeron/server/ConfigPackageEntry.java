@@ -1,6 +1,6 @@
-package rikka.shizuku.server;
+package frb.axeron.server;
 
-import rikka.shizuku.server.util.Logger;
+import frb.axeron.server.util.Logger;
 
 public abstract class ConfigPackageEntry {
 

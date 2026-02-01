@@ -1,9 +1,15 @@
 package frb.axeron.api;
 
 
+import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
+import static frb.axeron.shared.AxeronApiConstant.server.BINDER_TRANSACTION_transact;
+import static frb.axeron.shared.AxeronApiConstant.server.BIND_APPLICATION_PERMISSION_GRANTED;
+import static frb.axeron.shared.AxeronApiConstant.server.BIND_APPLICATION_SHOULD_SHOW_REQUEST_PERMISSION_RATIONALE;
+import static frb.axeron.shared.AxeronApiConstant.server.REQUEST_PERMISSION_REPLY_ALLOWED;
 import static frb.axeron.shared.AxeronApiConstant.server.TYPE_ENV;
 
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -14,24 +20,24 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RestrictTo;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import frb.axeron.api.core.AxeronSettings;
-import frb.axeron.api.core.Engine;
 import frb.axeron.server.Environment;
-import frb.axeron.server.IAxeronApplication;
 import frb.axeron.server.IAxeronService;
 import frb.axeron.server.PluginInfo;
 import frb.axeron.shared.AxeronApiConstant;
+import moe.shizuku.server.IShizukuApplication;
 import moe.shizuku.server.IShizukuService;
-import rikka.shizuku.Shizuku;
 
 public class Axeron {
     private static final List<ListenerHolder<OnBinderReceivedListener>> RECEIVED_LISTENERS = new ArrayList<>();
     private static final List<ListenerHolder<OnBinderDeadListener>> DEAD_LISTENERS = new ArrayList<>();
+    private static final List<ListenerHolder<OnRequestPermissionResultListener>> PERMISSION_LISTENERS = new ArrayList<>();
 
     protected static String TAG = "AxeronApplication";
     private static final Handler MAIN_HANDLER = new Handler(Looper.getMainLooper());
@@ -39,6 +45,102 @@ public class Axeron {
     private static IAxeronService service;
     private static AxeronInfo axeronInfo = null;
     private static boolean binderReady = false;
+
+    private static boolean permissionGranted = false;
+    private static boolean shouldShowRequestPermissionRationale = false;
+
+    private static final IShizukuApplication SHIZUKU_APPLICATION = new IShizukuApplication.Stub() {
+
+        @Override
+        public void bindApplication(Bundle data) {
+//            serverUid = data.getInt(BIND_APPLICATION_SERVER_UID, -1);
+//            serverApiVersion = data.getInt(BIND_APPLICATION_SERVER_VERSION, -1);
+//            serverPatchVersion = data.getInt(BIND_APPLICATION_SERVER_PATCH_VERSION, -1);
+//            serverContext = data.getString(BIND_APPLICATION_SERVER_SECONTEXT);
+            permissionGranted = data.getBoolean(BIND_APPLICATION_PERMISSION_GRANTED, false);
+            shouldShowRequestPermissionRationale = data.getBoolean(BIND_APPLICATION_SHOULD_SHOW_REQUEST_PERMISSION_RATIONALE, false);
+
+            scheduleBinderReceivedListeners();
+
+            if (isFirstInit(false)
+                    || AxeronSettings.getEnableIgniteRelog()) {
+                Log.d(TAG, "igniteService");
+                AxeronPluginService.igniteService();
+            }
+        }
+
+        @Override
+        public void dispatchRequestPermissionResult(int requestCode, Bundle data) {
+            boolean allowed = data.getBoolean(REQUEST_PERMISSION_REPLY_ALLOWED, false);
+            scheduleRequestPermissionResultListener(requestCode, allowed ? PackageManager.PERMISSION_GRANTED : PackageManager.PERMISSION_DENIED);
+        }
+
+        @Override
+        public void showPermissionConfirmation(int requestUid, int requestPid, String requestPackageName, int requestCode) {
+            // non-app
+        }
+    };
+
+    public static int checkSelfPermission() {
+        if (permissionGranted) return PackageManager.PERMISSION_GRANTED;
+        try {
+            permissionGranted = requireService().checkSelfPermission();
+        } catch (RemoteException e) {
+            throw rethrowAsRuntimeException(e);
+        }
+        return permissionGranted ? PackageManager.PERMISSION_GRANTED : PackageManager.PERMISSION_DENIED;
+    }
+
+    public static boolean shouldShowRequestPermissionRationale() {
+        if (permissionGranted) return false;
+        if (shouldShowRequestPermissionRationale) return true;
+        try {
+            shouldShowRequestPermissionRationale = requireService().shouldShowRequestPermissionRationale();
+        } catch (RemoteException e) {
+            throw rethrowAsRuntimeException(e);
+        }
+        return shouldShowRequestPermissionRationale;
+    }
+
+    public static void addRequestPermissionResultListener(@NonNull OnRequestPermissionResultListener listener) {
+        addRequestPermissionResultListener(listener, null);
+    }
+
+    public static void addRequestPermissionResultListener(@NonNull OnRequestPermissionResultListener listener, @Nullable Handler handler) {
+        synchronized (RECEIVED_LISTENERS) {
+            PERMISSION_LISTENERS.add(new ListenerHolder<>(listener, handler));
+        }
+    }
+
+    public static boolean removeRequestPermissionResultListener(@NonNull OnRequestPermissionResultListener listener) {
+        synchronized (RECEIVED_LISTENERS) {
+            return PERMISSION_LISTENERS.removeIf(holder -> holder.listener == listener);
+        }
+    }
+
+    private static void scheduleRequestPermissionResultListener(int requestCode, int result) {
+        synchronized (RECEIVED_LISTENERS) {
+            for (ListenerHolder<OnRequestPermissionResultListener> holder : PERMISSION_LISTENERS) {
+                if (holder.handler != null) {
+                    holder.handler.post(() -> holder.listener.onRequestPermissionResult(requestCode, result));
+                } else {
+                    if (Looper.myLooper() == Looper.getMainLooper()) {
+                        holder.listener.onRequestPermissionResult(requestCode, result);
+                    } else {
+                        MAIN_HANDLER.post(() -> holder.listener.onRequestPermissionResult(requestCode, result));
+                    }
+                }
+            }
+        }
+    }
+
+    public static void requestPermission(int requestCode) {
+        try {
+            requireService().requestPermission(requestCode);
+        } catch (RemoteException e) {
+            throw rethrowAsRuntimeException(e);
+        }
+    }
 
     private static void scheduleBinderDeadListeners() {
         synchronized (RECEIVED_LISTENERS) {
@@ -127,7 +229,7 @@ public class Axeron {
         }
     }
 
-    public static void onBinderReceived(IBinder newBinder) {
+    public static void onBinderReceived(IBinder newBinder, String packageName) {
         if (binder == newBinder) return;
 
         if (newBinder == null) {
@@ -144,7 +246,6 @@ public class Axeron {
             }
             binder = newBinder;
             service = IAxeronService.Stub.asInterface(newBinder);
-            notifyShizuku();
 
             try {
                 binder.linkToDeath(DEATH_RECIPIENT, 0);
@@ -152,24 +253,31 @@ public class Axeron {
                 Log.i(TAG, "attachApplication");
             }
 
-            scheduleBinderReceivedListeners();
-
             try {
-                service.bindAxeronApplication(new IAxeronApplication.Stub() {
-                    @Override
-                    public void bindApplication(Bundle data) {
-                        if (isFirstInit(false)
-                                || AxeronSettings.getEnableIgniteRelog()) {
-                            Log.d(TAG, "igniteService");
-                            AxeronPluginService.igniteService();
-                        }
-                    }
-                });
-            } catch (RemoteException e) {
-                throw new RuntimeException(e);
+                attachApplication(binder, packageName);
+                Log.i("ShizukuApplication", "attachApplication");
+            } catch (Throwable e) {
+                Log.w("ShizukuApplication", Log.getStackTraceString(e));
             }
 
         }
+    }
+
+    private static void attachApplication(IBinder binder, String packageName) throws RemoteException {
+
+        Parcel data = Parcel.obtain();
+        Parcel reply = Parcel.obtain();
+        try {
+            data.writeInterfaceToken(IAxeronService.DESCRIPTOR);
+            data.writeStrongBinder(SHIZUKU_APPLICATION.asBinder());
+            data.writeString(packageName);
+            binder.transact(14, data, reply, 0);
+            reply.readException();
+        } finally {
+            reply.recycle();
+            data.recycle();
+        }
+
     }
 
     public static IShizukuService getShizukuService() {
@@ -182,14 +290,6 @@ public class Axeron {
         }
     }
 
-    public synchronized static void notifyShizuku() {
-        IShizukuService shizukuService = getShizukuService();
-        if (shizukuService != null) {
-            Shizuku.onBinderReceived(shizukuService.asBinder(), Engine.getApplication().getPackageName());
-        } else {
-            Shizuku.onBinderReceived(null, Engine.getApplication().getPackageName());
-        }
-    }
 
     public static void enableShizukuService(boolean enable) {
         try {
@@ -232,9 +332,17 @@ public class Axeron {
         }
     }
 
-    private static final IBinder.DeathRecipient DEATH_RECIPIENT = () -> {
+    public static AxeronNewProcess newProcess(@NonNull String[] cmd, @Nullable Environment env, @Nullable String dir) {
+        try {
+
+            return new AxeronNewProcess(requireService().newProcess(cmd, env != null ? env.getEnv() : null, dir));
+        } catch (RemoteException | NullPointerException e) {
+//            Log.d(TAG, "Failed to execute command", e);
+            throw new RuntimeException("Failed to execute command", e);
+        }
+    }    private static final IBinder.DeathRecipient DEATH_RECIPIENT = () -> {
         binderReady = false;
-        onBinderReceived(null);
+        onBinderReceived(null, null);
     };
 
     public static AxeronNewProcess newProcess(@NonNull String cmd) {
@@ -245,12 +353,16 @@ public class Axeron {
         return newProcess(cmd, Axeron.getEnvironment(TYPE_ENV), null);
     }
 
-    public static AxeronNewProcess newProcess(@NonNull String[] cmd, @Nullable Environment env, @Nullable String dir) {
-        try {
-            return new AxeronNewProcess(requireService().getRuntimeService(cmd, env, dir));
-        } catch (RemoteException | NullPointerException e) {
-//            Log.d(TAG, "Failed to execute command", e);
-            throw new RuntimeException("Failed to execute command", e);
+    public static void destroy() {
+        if (binder != null) {
+            try {
+                requireService().exit();
+            } catch (RemoteException ignored) {
+            }
+            binder = null;
+            service = null;
+            axeronInfo = null;
+            scheduleBinderDeadListeners();
         }
     }
 
@@ -289,17 +401,11 @@ public class Axeron {
         }
     }
 
-    public static void destroy() {
-        if (binder != null) {
-            try {
-                requireService().destroy();
-            } catch (RemoteException ignored) {
-            }
-            binder = null;
-            service = null;
-            axeronInfo = null;
-            scheduleBinderDeadListeners();
-            notifyShizuku();
+    public static void transactRemote(@NonNull Parcel data, @Nullable Parcel reply, int flags) {
+        try {
+            requireService().asBinder().transact(BINDER_TRANSACTION_transact, data, reply, flags);
+        } catch (RemoteException e) {
+            throw rethrowAsRuntimeException("Axeron", e);
         }
     }
 
@@ -331,11 +437,12 @@ public class Axeron {
         return new RuntimeException(e);
     }
 
-    public static void transactRemote(@NonNull Parcel data, @Nullable Parcel reply, int flags) {
+    public static int checkRemotePermission(String permission) {
+        if (getAxeronInfo().isRoot()) return PackageManager.PERMISSION_GRANTED;
         try {
-            requireService().asBinder().transact(1, data, reply, flags);
+            return requireService().checkPermission(permission);
         } catch (RemoteException e) {
-            throw rethrowAsRuntimeException("Axeron", e);
+            throw rethrowAsRuntimeException(e);
         }
     }
 
@@ -351,6 +458,15 @@ public class Axeron {
         void onBinderDead();
     }
 
+    @RestrictTo(LIBRARY_GROUP_PREFIX)
+    public static void attachUserService(@NonNull IBinder binder, @NonNull Bundle options) {
+        try {
+            requireService().attachUserService(binder, options);
+        } catch (RemoteException e) {
+            throw rethrowAsRuntimeException(e);
+        }
+    }
+
     private record ListenerHolder<T>(T listener, Handler handler) {
 
         private ListenerHolder(@NonNull T listener, @Nullable Handler handler) {
@@ -359,6 +475,38 @@ public class Axeron {
         }
 
     }
+
+    @RestrictTo(LIBRARY_GROUP_PREFIX)
+    public static void dispatchPermissionConfirmationResult(int requestUid, int requestPid, int requestCode, @NonNull Bundle data) {
+        try {
+            requireService().dispatchPermissionConfirmationResult(requestUid, requestPid, requestCode, data);
+        } catch (RemoteException e) {
+            throw rethrowAsRuntimeException(e);
+        }
+    }
+
+    @RestrictTo(LIBRARY_GROUP_PREFIX)
+    public static int getFlagsForUid(int uid, int mask) {
+        try {
+            return requireService().getFlagsForUid(uid, mask);
+        } catch (RemoteException e) {
+            throw rethrowAsRuntimeException(e);
+        }
+    }
+
+    @RestrictTo(LIBRARY_GROUP_PREFIX)
+    public static void updateFlagsForUid(int uid, int mask, int value) {
+        try {
+            requireService().updateFlagsForUid(uid, mask, value);
+        } catch (RemoteException e) {
+            throw rethrowAsRuntimeException(e);
+        }
+    }
+
+    public interface OnRequestPermissionResultListener {
+        void onRequestPermissionResult(int requestCode, int grantResult);
+    }
+
 
 
 }

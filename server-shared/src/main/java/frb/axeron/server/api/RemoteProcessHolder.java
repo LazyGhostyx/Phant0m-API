@@ -7,24 +7,24 @@ import android.os.RemoteException;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import frb.axeron.server.IRuntimeService;
 import frb.axeron.server.util.Logger;
 import frb.axeron.server.util.ParcelFileDescriptorUtil;
+import moe.shizuku.server.IRemoteProcess;
 
-public class RuntimeServiceHolder extends IRuntimeService.Stub {
+public class RemoteProcessHolder extends IRemoteProcess.Stub {
 
-    private static final Logger LOGGER = new Logger("RuntimeServiceImpl");
+    private static final Logger LOGGER = new Logger("RemoteProcessHolder");
 
     private final Process process;
     private ParcelFileDescriptor in;
     private ParcelFileDescriptor out;
 
-    public RuntimeServiceHolder(Process process, IBinder token) {
+    public RemoteProcessHolder(Process process, IBinder token) {
         this.process = process;
 
         if (token != null) {
             try {
-                IBinder.DeathRecipient deathRecipient = () -> {
+                DeathRecipient deathRecipient = () -> {
                     try {
                         if (alive()) {
                             destroy();

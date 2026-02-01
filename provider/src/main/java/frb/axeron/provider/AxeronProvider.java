@@ -18,7 +18,6 @@ import androidx.annotation.Nullable;
 import frb.axeron.api.Axeron;
 import frb.axeron.api.core.AxeronSettings;
 import moe.shizuku.api.BinderContainer;
-import rikka.shizuku.Shizuku;
 
 public class AxeronProvider extends ContentProvider {
     // For receive Binder from Shizuku
@@ -83,19 +82,13 @@ public class AxeronProvider extends ContentProvider {
                 Log.d(TAG, "binder received");
 
                 AxeronSettings.initialize(getContext());
-                Axeron.onBinderReceived(container.binder);
+                Axeron.onBinderReceived(container.binder, getContext().getPackageName());
 
                 Log.d(TAG, "broadcast binder");
                 Intent intent = new Intent(ACTION_BINDER_RECEIVED)
                         .setPackage(getContext().getPackageName());
                 getContext().sendBroadcast(intent);
             }
-            return;
-        }
-
-        if (!Shizuku.pingBinder() || Axeron.getShizukuService() == null) {
-            Log.d(TAG, "sendShizukuService is called");
-            Axeron.notifyShizuku();
         }
     }
 

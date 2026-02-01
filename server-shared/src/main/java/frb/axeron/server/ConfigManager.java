@@ -1,10 +1,10 @@
-package rikka.shizuku.server;
+package frb.axeron.server;
 
 import androidx.annotation.Nullable;
 
 import java.util.List;
 
-import rikka.shizuku.server.util.Logger;
+import frb.axeron.server.util.Logger;
 
 public abstract class ConfigManager {
 

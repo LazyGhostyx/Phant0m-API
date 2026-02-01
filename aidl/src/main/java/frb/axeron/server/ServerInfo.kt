@@ -25,21 +25,6 @@ data class ServerInfo(
         return versionCode + patchCode
     }
 
-//    fun isRunning(ping: Boolean, actualVersion: Long): Boolean {
-//        return ping && actualVersion <= getActualVersion()
-////        return Axeron.pingBinder() && AxeronService.getActualVersion() <= getActualVersion()
-//    }
-//
-//    fun isNeedUpdate(ping: Boolean, actualVersion: Long): Boolean {
-//        return actualVersion > getActualVersion() && ping
-////        return false
-////        return AxeronService.getActualVersion() > getActualVersion() && Axeron.pingBinder()
-//    }
-//
-//    fun isNeedExtraStep(ping: Boolean, actualVersion: Long): Boolean {
-//        return isRunning(ping, actualVersion) && !permission
-//    }
-
     fun getMode(): Mode {
         return when (uid) {
             -1 -> Mode.NOT_ACTIVATED

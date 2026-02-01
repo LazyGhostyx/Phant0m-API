@@ -1,4 +1,4 @@
-package rikka.shizuku.server.util;
+package frb.axeron.server.util;
 
 public class UserHandleCompat {
 

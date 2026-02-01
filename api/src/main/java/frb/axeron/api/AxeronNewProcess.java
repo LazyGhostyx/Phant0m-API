@@ -14,7 +14,7 @@ import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Set;
 
-import frb.axeron.server.IRuntimeService;
+import moe.shizuku.server.IRemoteProcess;
 
 public class AxeronNewProcess extends Process implements Parcelable {
 
@@ -31,12 +31,11 @@ public class AxeronNewProcess extends Process implements Parcelable {
     };
     private static final Set<AxeronNewProcess> CACHE = Collections.synchronizedSet(new ArraySet<>());
     private static final String TAG = "AxeronNewProcess";
-    private IRuntimeService remote;
+    private IRemoteProcess remote;
     private OutputStream os;
     private InputStream is;
 
-
-    public AxeronNewProcess(IRuntimeService remote) {
+    public AxeronNewProcess(IRemoteProcess remote) {
         this.remote = remote;
         try {
             this.remote.asBinder().linkToDeath(() -> {
@@ -54,7 +53,7 @@ public class AxeronNewProcess extends Process implements Parcelable {
     }
 
     protected AxeronNewProcess(Parcel in) {
-        remote = IRuntimeService.Stub.asInterface(in.readStrongBinder());
+        remote = IRemoteProcess.Stub.asInterface(in.readStrongBinder());
     }
 
     @Override

@@ -1,4 +1,4 @@
-package rikka.shizuku.server.util;
+package frb.axeron.server.util;
 
 import android.os.SELinux;
 

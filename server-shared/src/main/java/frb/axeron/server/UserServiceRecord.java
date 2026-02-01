@@ -1,6 +1,7 @@
-package rikka.shizuku.server;
+package frb.axeron.server;
 
-import static rikka.shizuku.ShizukuApiConstants.USER_SERVICE_TRANSACTION_destroy;
+import static frb.axeron.shared.AxeronApiConstant.server.BINDER_DESCRIPTOR;
+import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_TRANSACTION_destroy;
 
 import android.os.Binder;
 import android.os.IBinder;
@@ -11,11 +12,9 @@ import java.io.IOException;
 import java.util.Locale;
 import java.util.UUID;
 
+import frb.axeron.server.util.HandlerUtil;
+import frb.axeron.server.util.Logger;
 import moe.shizuku.server.IShizukuServiceConnection;
-import rikka.shizuku.ShizukuApiConstants;
-import rikka.shizuku.server.util.HandlerUtil;
-import rikka.shizuku.server.util.Logger;
-
 public abstract class UserServiceRecord {
 
     protected static final Logger LOGGER = new Logger("UserServiceRecord");
@@ -122,7 +121,7 @@ public abstract class UserServiceRecord {
             Parcel data = Parcel.obtain();
             Parcel reply = Parcel.obtain();
             try {
-                data.writeInterfaceToken(ShizukuApiConstants.BINDER_DESCRIPTOR);
+                data.writeInterfaceToken(BINDER_DESCRIPTOR);
                 service.transact(USER_SERVICE_TRANSACTION_destroy, data, reply, Binder.FLAG_ONEWAY);
             } catch (Throwable e) {
                 LOGGER.w("Failed to call destroy %s", token);

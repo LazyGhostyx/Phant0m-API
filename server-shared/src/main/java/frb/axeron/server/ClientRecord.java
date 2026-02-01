@@ -1,11 +1,11 @@
-package rikka.shizuku.server;
+package frb.axeron.server;
 
-import static rikka.shizuku.ShizukuApiConstants.REQUEST_PERMISSION_REPLY_ALLOWED;
+import static frb.axeron.shared.AxeronApiConstant.server.REQUEST_PERMISSION_REPLY_ALLOWED;
 
 import android.os.Bundle;
 
+import frb.axeron.server.util.Logger;
 import moe.shizuku.server.IShizukuApplication;
-import rikka.shizuku.server.util.Logger;
 
 public class ClientRecord {
 
