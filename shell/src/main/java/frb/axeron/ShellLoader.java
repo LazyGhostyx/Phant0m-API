@@ -3,6 +3,7 @@ package frb.axeron;
 import android.app.IActivityManager;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -16,6 +17,7 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 
 import java.io.File;
+import java.util.Objects;
 
 import dalvik.system.BaseDexClassLoader;
 import frb.axeron.server.ServerConstants;
@@ -35,7 +37,7 @@ public class ShellLoader {
                 IBinder binder = data.readStrongBinder();
 
                 String sourceDir = data.readString();
-                if (binder != null) {
+                if (binder != null && sourceDir != null) {
                     handler.post(() -> onBinderReceived(binder, sourceDir));
                 } else {
                     System.err.println("Server is not running");
@@ -48,15 +50,31 @@ public class ShellLoader {
         }
     };
 
-    private static void requestForBinder() {
+    private static void requestForBinder() throws RemoteException {
         Bundle data = new Bundle();
         data.putBinder("binder", receiverBinder);
+
+        Intent intent = new Intent(ServerConstants.REQUEST_BINDER_AXERISH)
+                .setPackage("frb.axeron.manager")
+                .addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES)
+                .putExtra("data", data);
 
         IBinder amBinder = ServiceManager.getService("activity");
         IActivityManager am;
         am = IActivityManager.Stub.asInterface(amBinder);
 
         try {
+            am.broadcastIntent(null, intent, null, null, 0, null, null,
+                    null, -1, null, true, false, 0);
+        } catch (Throwable e) {
+            if ((Build.VERSION.SDK_INT != Build.VERSION_CODES.O && Build.VERSION.SDK_INT != Build.VERSION_CODES.O_MR1)
+                    || !Objects.equals(e.getMessage(), "Calling application did not provide package name")) {
+                throw e;
+            }
+
+            System.err.println("broadcastIntent fails on Android 8.0 or 8.1, fallback to startActivity");
+            System.err.flush();
+
             Intent activityIntent = new Intent(ServerConstants.REQUEST_BINDER_AXERISH)
                     .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -64,10 +82,6 @@ public class ShellLoader {
                     .putExtra("data", data);
 
             am.startActivityAsUser(null, callingPackage, activityIntent, null, null, null, 0, 0, null, null, Os.getuid() / 100000);
-        } catch (Throwable tr) {
-            tr.printStackTrace(System.err);
-            System.err.flush();
-            System.exit(1);
         }
     }
 

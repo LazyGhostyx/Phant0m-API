@@ -30,4 +30,5 @@ include(":server-shared")
 include(":rish")
 include(":axerish")
 include(":demo-axerish")
+include(":runtime")
  

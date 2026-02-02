@@ -65,14 +65,19 @@ object Axerish {
     const val TAG = "Axerish"
 
     lateinit var axerish_path: File
-    lateinit var dex_path: File
+    lateinit var axerish_dex_path: File
+
+    lateinit var axrun_path: File
+    lateinit var axrun_dex_path: File
 
     fun initialize(context: Context) {
         Log.i(TAG, "Initializing Axerish")
 
         val filesDir = "${'/'}data/data/${context.packageName}/files"
         axerish_path = File(filesDir, "bin/axerish")
-        dex_path = File(filesDir, "bin/shell_axerish.dex")
+        axerish_dex_path = File(filesDir, "bin/shell_axerish.dex")
+        axrun_path = File(filesDir, "bin/axrun")
+        axrun_dex_path = File(filesDir, "bin/shell_axrun.dex")
 
         // permission AFTER copy
         try {
@@ -81,10 +86,21 @@ object Axerish {
             } else {
                 Log.i(TAG, "Axerish already exists")
             }
-            if (copyAssetIfDifferent(context, "scripts/shell_axerish.dex", dex_path)) {
-                Os.chmod(dex_path.absolutePath, "400".toInt(8))
+            if (copyAssetIfDifferent(context, "scripts/shell_axerish.dex", axerish_dex_path)) {
+                Os.chmod(axerish_dex_path.absolutePath, "400".toInt(8))
             } else {
                 Log.i(TAG, "Axerish dex already exists")
+            }
+
+            if (copyAssetIfDifferent(context, "scripts/axrun", axrun_path)) {
+                Os.chmod(axrun_path.absolutePath, "755".toInt(8))
+            } else {
+                Log.i(TAG, "AxRuntime already exists")
+            }
+            if (copyAssetIfDifferent(context, "scripts/shell_axruntime.dex", axrun_dex_path)) {
+                Os.chmod(axrun_dex_path.absolutePath, "400".toInt(8))
+            } else {
+                Log.i(TAG, "AxRuntime dex already exists")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to Init Axerish", e)
@@ -96,7 +112,9 @@ object Axerish {
 
         val baseDir = "${'/'}data/data/${packageName}/files/bin"
         axerish_path = File(baseDir, "axerish")
-        dex_path = File(baseDir, "shell_axerish.dex")
+        axerish_dex_path = File(baseDir, "shell_axerish.dex")
+        axrun_path = File(baseDir, "axrun")
+        axrun_dex_path = File(baseDir, "shell_axruntime.dex")
 
         val cmd = $$"""
             set -e
@@ -133,7 +151,9 @@ object Axerish {
             }
     
             check_and_extract "scripts/axerish" "$${axerish_path.absolutePath}" 755
-            check_and_extract "scripts/shell_axerish.dex" "$${dex_path.absolutePath}" 400
+            check_and_extract "scripts/shell_axerish.dex" "$${axerish_dex_path.absolutePath}" 400
+            check_and_extract "scripts/axrun" "$${axrun_path.absolutePath}" 755
+            check_and_extract "scripts/shell_axruntime.dex" "$${axrun_dex_path.absolutePath}" 400
     
             echo "Axerish init done"
         """.trimIndent()

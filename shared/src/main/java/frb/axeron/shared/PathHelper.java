@@ -23,8 +23,8 @@ public class PathHelper {
 
     public static File getWorkingPath(boolean rootMode, String folderName) {
         if (rootMode) {
-            if (folderName == null) return new File(AxeronApiConstant.folder.ADB);
-            return new File(AxeronApiConstant.folder.ADB, folderName);
+            if (folderName == null) return new File(AxeronApiConstant.folder.ROOT_DE);
+            return new File(AxeronApiConstant.folder.ROOT_DE, folderName);
         }
         if (folderName == null) return new File(AxeronApiConstant.folder.SHELL_DE);
         return new File(AxeronApiConstant.folder.SHELL_DE, folderName);
