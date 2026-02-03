@@ -473,8 +473,8 @@ object AxeronPluginService {
 
     suspend fun igniteSuspendService(): Boolean = withContext(Dispatchers.IO) {
 
-        val localVer = Axeron.getAxeronInfo().getActualVersion()
-        val serverVer = AxeronApiConstant.server.getActualVersion()
+        val localVer = Axeron.getAxeronInfo().getVersionCode()
+        val serverVer = AxeronApiConstant.server.VERSION_CODE
 
         if (serverVer > localVer) {
             Log.i(TAG, "Updating.. $localVer < $serverVer")

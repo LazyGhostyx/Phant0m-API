@@ -54,7 +54,7 @@ public class ShellLoader {
         Bundle data = new Bundle();
         data.putBinder("binder", receiverBinder);
 
-        Intent intent = new Intent(ServerConstants.REQUEST_BINDER_AXERISH)
+        Intent intent = new Intent(ServerConstants.REQUEST_BINDER_AXRUNTIME)
                 .setPackage("frb.axeron.manager")
                 .addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES)
                 .putExtra("data", data);
@@ -75,7 +75,7 @@ public class ShellLoader {
             System.err.println("broadcastIntent fails on Android 8.0 or 8.1, fallback to startActivity");
             System.err.flush();
 
-            Intent activityIntent = new Intent(ServerConstants.REQUEST_BINDER_AXERISH)
+            Intent activityIntent = new Intent(ServerConstants.REQUEST_BINDER_AXRUNTIME)
                     .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)

@@ -10,16 +10,16 @@ data class AxeronInfo(
     val serverInfo: ServerInfo = ServerInfo()
 ) : Parcelable {
 
-    fun getActualVersion(): Long {
-        return serverInfo.getActualVersion()
+    fun getVersionCode(): Long {
+        return serverInfo.versionCode
     }
 
     fun isRunning(): Boolean {
-        return Axeron.pingBinder() && AxeronApiConstant.server.getActualVersion() <= getActualVersion()
+        return Axeron.pingBinder() && AxeronApiConstant.server.VERSION_CODE <= getVersionCode()
     }
 
     fun isNeedUpdate(): Boolean {
-        return AxeronApiConstant.server.getActualVersion() > getActualVersion() && Axeron.pingBinder()
+        return AxeronApiConstant.server.VERSION_CODE > getVersionCode() && Axeron.pingBinder()
     }
 
     fun isNeedExtraStep(): Boolean {

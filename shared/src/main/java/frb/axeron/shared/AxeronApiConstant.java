@@ -5,9 +5,8 @@ public class AxeronApiConstant {
 
         public static final String BINDER_DESCRIPTOR = "frb.axeron.server.IAxeronService";
         public static final String SHIZUKU_BINDER_DESCRIPTOR = "moe.shizuku.server.IShizukuService";
-        public static final String VERSION_NAME = BuildConfig.SERVER_VERSION_NAME;
-        public static final long VERSION_CODE = BuildConfig.SERVER_VERSION_CODE;
-        public static final long PATCH_CODE = BuildConfig.SERVER_PATCH_CODE;
+        public static final String VERSION_NAME = BuildConfig.VERSION_NAME;
+        public static final long VERSION_CODE = BuildConfig.VERSION_CODE;
         public static final int TYPE_DEFAULT_ENV = -1;
         public static final int TYPE_ENV = 0;
         public static final int TYPE_NEW_ENV = 1;
@@ -52,9 +51,6 @@ public class AxeronApiConstant {
         public static final String ATTACH_APPLICATION_PACKAGE_NAME = "shizuku:attach-package-name";
         public static final String ATTACH_APPLICATION_API_VERSION = "shizuku:attach-api-version";
 
-        public static long getActualVersion() {
-            return VERSION_CODE + PATCH_CODE;
-        }
     }
 
     public interface folder {

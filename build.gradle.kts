@@ -71,7 +71,7 @@ subprojects {
         plugins.apply("maven-publish")
 
         extensions.findByName("android")?.let {
-            (it as com.android.build.gradle.LibraryExtension).publishing {
+            (it as LibraryExtension).publishing {
                 singleVariant("release")
             }
         }

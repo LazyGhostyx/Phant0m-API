@@ -24,10 +24,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import frb.axeron.server.IAxeronService;
 import frb.axeron.server.ServerConstants;
+import frb.axeron.shared.AxeronApiConstant;
 import rikka.hidden.compat.PackageManagerApis;
 
 public class RuntimeLoader {
-
+    private static final Long VERSION_CODE  = AxeronApiConstant.server.VERSION_CODE;
     private static final CountDownLatch latch = new CountDownLatch(1);
     private static final AtomicReference<IAxeronService> axeronService = new AtomicReference<>();
     private static final AtomicReference<String> sourceDir = new AtomicReference<>();
@@ -37,8 +38,9 @@ public class RuntimeLoader {
         protected boolean onTransact(int code, @NonNull Parcel data, Parcel reply, int flags) {
             if (code == 1) {
                 IBinder binder = data.readStrongBinder();
-
+                long versionCode = data.readLong();
                 String source = data.readString();
+                if (versionCode < VERSION_CODE) abort("Server version is too old");
                 if (binder != null) {
                     axeronService.set(IAxeronService.Stub.asInterface(binder));
                     sourceDir.set(source);
@@ -68,7 +70,7 @@ public class RuntimeLoader {
         IBinder amBinder = ServiceManager.getService("activity");
         IActivityManager am = IActivityManager.Stub.asInterface(amBinder);
 
-        Intent activityIntent = new Intent(ServerConstants.REQUEST_BINDER_AXERISH)
+        Intent activityIntent = new Intent(ServerConstants.REQUEST_BINDER_AXRUNTIME)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)

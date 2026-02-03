@@ -13,17 +13,12 @@ enum class Mode(val label: String) {
 data class ServerInfo(
     val version: String = "Unknown",
     val versionCode: Long = -1,
-    val patchCode: Long = 0,
     val uid: Int = -1,
     val pid: Int = -1,
     val selinuxContext: String = "Unknown",
     val starting: Long = SystemClock.elapsedRealtime(),
     val permission: Boolean = false
 ) : Parcelable {
-
-    fun getActualVersion(): Long {
-        return versionCode + patchCode
-    }
 
     fun getMode(): Mode {
         return when (uid) {

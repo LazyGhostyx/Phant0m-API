@@ -447,7 +447,7 @@ public class Axeron {
     }
 
     public static boolean isUpdated() {
-        return AxeronApiConstant.server.getActualVersion() <= Axeron.getAxeronInfo().getActualVersion();
+        return AxeronApiConstant.server.VERSION_CODE <= Axeron.getAxeronInfo().getServerInfo().getVersionCode();
     }
 
     public interface OnBinderReceivedListener {

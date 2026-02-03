@@ -1,13 +1,8 @@
 val apiVersionMajor = 1
 val apiVersionMinor = 4
-val apiVersionPatch = 330
+val apiVersionPatch = 340
 
 val patchDigits = apiVersionPatch.toString().length
-val patchShift = when (patchDigits) {
-    1 -> 100
-    2 -> 10
-    else -> 1
-}
 
 val patchMajorDigit = apiVersionPatch
     .toString()

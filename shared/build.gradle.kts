@@ -10,19 +10,14 @@ android {
         consumerProguardFiles("consumer-rules.pro")
 
         buildConfigField(
+            "int",
+            "VERSION_CODE",
+            "${findProperty("api_version_code")}"
+        )
+        buildConfigField(
             "String",
-            "SERVER_VERSION_NAME",
+            "VERSION_NAME",
             "\"${findProperty("api_version_name")}\""
-        )
-        buildConfigField(
-            "int",
-            "SERVER_VERSION_CODE",
-            "${findProperty("api_version_code")}"
-        )
-        buildConfigField(
-            "int",
-            "SERVER_PATCH_CODE",
-            "${findProperty("api_version_code")}"
         )
     }
 
