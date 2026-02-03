@@ -5,7 +5,6 @@ import static frb.axeron.shared.AxeronApiConstant.server.TYPE_ENV;
 import android.app.IActivityManager;
 import android.content.Intent;
 import android.os.Binder;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcel;
@@ -18,7 +17,6 @@ import androidx.annotation.NonNull;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -33,6 +31,7 @@ public class RuntimeLoader {
     private static final CountDownLatch latch = new CountDownLatch(1);
     private static final AtomicReference<IAxeronService> axeronService = new AtomicReference<>();
     private static final AtomicReference<String> sourceDir = new AtomicReference<>();
+    private static AtomicReference<String[]> env = null;
     private static final Binder replyBinder = new Binder() {
         @Override
         protected boolean onTransact(int code, @NonNull Parcel data, Parcel reply, int flags) {
@@ -43,6 +42,11 @@ public class RuntimeLoader {
                 if (binder != null) {
                     axeronService.set(IAxeronService.Stub.asInterface(binder));
                     sourceDir.set(source);
+                    try {
+                        env = new AtomicReference<>(axeronService.get().getEnvironment(TYPE_ENV).getEnv());
+                    } catch (RemoteException e) {
+                        abort("Error: " + e.getMessage());
+                    }
                     latch.countDown();
                 } else {
                     abort("Server is not running");
@@ -61,34 +65,16 @@ public class RuntimeLoader {
         Bundle bundle = new Bundle();
         bundle.putBinder("binder", replyBinder);
 
-        Intent intent = new Intent(ServerConstants.REQUEST_BINDER_AXERISH)
-                .setPackage("frb.axeron.manager")
-                .setFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES)
-                .putExtra("data", bundle);
-
         IBinder amBinder = ServiceManager.getService("activity");
         IActivityManager am = IActivityManager.Stub.asInterface(amBinder);
 
-        try {
-            am.broadcastIntent(null, intent, null, null, 0, null, null,
-                    null, -1, null, true, false, 0);
-        } catch (Throwable e) {
-            if ((Build.VERSION.SDK_INT != Build.VERSION_CODES.O && Build.VERSION.SDK_INT != Build.VERSION_CODES.O_MR1)
-                    || !Objects.equals(e.getMessage(), "Calling application did not provide package name")) {
-                throw e;
-            }
+        Intent activityIntent = new Intent(ServerConstants.REQUEST_BINDER_AXERISH)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
+                .putExtra("data", bundle);
 
-            System.err.println("broadcastIntent fails on Android 8.0 or 8.1, fallback to startActivity");
-            System.err.flush();
-
-            Intent activityIntent = new Intent(ServerConstants.REQUEST_BINDER_AXERISH)
-                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
-                    .putExtra("data", bundle);
-
-            am.startActivityAsUser(null, callingPackage, activityIntent, null, null, null, 0, 0, null, null, Os.getuid() / 100000);
-        }
+        am.startActivityAsUser(null, callingPackage, activityIntent, null, null, null, 0, 0, null, null, Os.getuid() / 100000);
     }
 
     public static void main(String[] args) {
@@ -140,8 +126,8 @@ public class RuntimeLoader {
                 argv = newArgv;
             }
 
-            RemoteProcess process = new RemoteProcess(axeronService.get().newProcess(argv, axeronService.get().getEnvironment(TYPE_ENV).getEnv(), null));
-
+            RemoteProcess process = new RemoteProcess(axeronService.get().newProcess(argv, env.get(), null));
+            int pid = Os.getpid();
             new Thread(() -> {
                 try (
                         InputStream in = process.getInputStream();
@@ -156,7 +142,7 @@ public class RuntimeLoader {
                 } catch (Exception e) {
                     e.printStackTrace(System.err);
                 }
-            }, "runtime-stdout").start();
+            }, pid + "-stdout").start();
 
             new Thread(() -> {
                 try (
@@ -172,7 +158,7 @@ public class RuntimeLoader {
                 } catch (Exception e) {
                     e.printStackTrace(System.err);
                 }
-            }, "runtime-stderr").start();
+            }, pid + "-stderr").start();
 
             new Thread(() -> {
                 try {
@@ -187,7 +173,7 @@ public class RuntimeLoader {
                 } catch (Exception e) {
                     e.printStackTrace(System.err);
                 }
-            }, "runtime-waiter").start();
+            }, pid + "-waiter").start();
 
 
             InputStream in = System.in;
