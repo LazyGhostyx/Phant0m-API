@@ -3,6 +3,8 @@ package frb.axeron.server;
 import android.os.IBinder;
 import android.os.RemoteException;
 
+import androidx.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -47,6 +49,7 @@ public class ClientManager<ConfigMgr extends ConfigManager> {
         return null;
     }
 
+    @Nullable
     public ClientRecord findClient(int uid, int pid) {
         for (ClientRecord clientRecord : clientRecords) {
             if (clientRecord.pid == pid && clientRecord.uid == uid) {

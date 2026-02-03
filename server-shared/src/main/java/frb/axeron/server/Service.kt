@@ -230,11 +230,19 @@ abstract class Service<UserServiceMgr : UserServiceManager,
         val callingUid = getCallingUid()
         val callingPid = getCallingPid()
 
+
+
+        if (callingUid == 0 || callingUid == 2000) return true
+
         if (callingUid == OsUtils.getUid() || callingPid == OsUtils.getPid()) {
             return true
         }
 
-        return clientManager.requireClient(callingUid, callingPid).allowed
+        val granted = configManager.find(callingUid)?.isAllowed ?: false
+
+        LOGGER.i("checkSelfPermission: uid=%d, pid=%d, granted=%s", callingUid, callingPid, granted)
+
+        return granted
     }
 
     override fun requestPermission(requestCode: Int) {
@@ -242,20 +250,24 @@ abstract class Service<UserServiceMgr : UserServiceManager,
         val callingPid = getCallingPid()
         val userId = UserHandleCompat.getUserId(callingUid)
 
+        LOGGER.i("requestPermission: uid=%d, pid=%d", callingUid, callingPid)
+
+        if (callingUid == 0 || callingUid == 2000) return
+
         if (callingUid == OsUtils.getUid() || callingPid == OsUtils.getPid()) {
             return
         }
 
-        val clientRecord: ClientRecord =
-            clientManager.requireClient(callingUid, callingPid)
+        val clientRecord: ClientRecord? =
+            clientManager.findClient(callingUid, callingPid)
 
-        if (clientRecord.allowed) {
+        if (clientRecord != null && clientRecord.allowed) {
             clientRecord.dispatchRequestPermissionResult(requestCode, true)
             return
         }
 
         val entry: ConfigPackageEntry? = configManager.find(callingUid)
-        if (entry != null && entry.isDenied()) {
+        if (clientRecord != null && entry != null && entry.isDenied()) {
             clientRecord.dispatchRequestPermissionResult(requestCode, false)
             return
         }
@@ -265,7 +277,7 @@ abstract class Service<UserServiceMgr : UserServiceManager,
 
     abstract fun showPermissionConfirmation(
         requestCode: Int,
-        clientRecord: ClientRecord,
+        clientRecord: ClientRecord?,
         callingUid: Int,
         callingPid: Int,
         userId: Int

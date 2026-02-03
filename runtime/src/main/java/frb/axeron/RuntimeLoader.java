@@ -208,11 +208,11 @@ public class RuntimeLoader {
     }
 
     public void start() throws RemoteException {
-//        if (axeronService.get().checkSelfPermission()) {
-//            axeronService.get().requestPermission(0);
-//            abort("Permission requested. Please re-run the command.");
-//            return;
-//        }
+        if (!axeronService.get().checkSelfPermission()) {
+            axeronService.get().requestPermission(0);
+            abort("Permission denied.");
+            return;
+        }
         startShell();
     }
 }
