@@ -1,6 +1,6 @@
 package frb.axeron.server;
 
-import static frb.axeron.shared.AxeronApiConstant.server.REQUEST_PERMISSION_REPLY_ALLOWED;
+import static frb.axeron.shared.ShizukuApiConstant.REQUEST_PERMISSION_REPLY_ALLOWED;
 
 import android.os.Bundle;
 

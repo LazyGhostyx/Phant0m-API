@@ -1,7 +1,7 @@
 package frb.axeron.server;
 
 import static frb.axeron.shared.AxeronApiConstant.server.BINDER_DESCRIPTOR;
-import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_TRANSACTION_destroy;
+import static frb.axeron.shared.ShizukuApiConstant.USER_SERVICE_TRANSACTION_destroy;
 
 import android.os.Binder;
 import android.os.IBinder;

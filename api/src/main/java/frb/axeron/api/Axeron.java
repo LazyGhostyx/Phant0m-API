@@ -2,11 +2,11 @@ package frb.axeron.api;
 
 
 import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
-import static frb.axeron.shared.AxeronApiConstant.server.BINDER_TRANSACTION_transact;
-import static frb.axeron.shared.AxeronApiConstant.server.BIND_APPLICATION_PERMISSION_GRANTED;
-import static frb.axeron.shared.AxeronApiConstant.server.BIND_APPLICATION_SHOULD_SHOW_REQUEST_PERMISSION_RATIONALE;
-import static frb.axeron.shared.AxeronApiConstant.server.REQUEST_PERMISSION_REPLY_ALLOWED;
 import static frb.axeron.shared.AxeronApiConstant.server.TYPE_ENV;
+import static frb.axeron.shared.ShizukuApiConstant.BINDER_TRANSACTION_transact;
+import static frb.axeron.shared.ShizukuApiConstant.BIND_APPLICATION_PERMISSION_GRANTED;
+import static frb.axeron.shared.ShizukuApiConstant.BIND_APPLICATION_SHOULD_SHOW_REQUEST_PERMISSION_RATIONALE;
+import static frb.axeron.shared.ShizukuApiConstant.REQUEST_PERMISSION_REPLY_ALLOWED;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;

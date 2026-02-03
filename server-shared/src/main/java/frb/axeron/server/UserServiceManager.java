@@ -1,16 +1,16 @@
 package frb.axeron.server;
 
-import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_COMPONENT;
-import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_DAEMON;
-import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_DEBUGGABLE;
-import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_NO_CREATE;
-import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_PGID;
-import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_PROCESS_NAME;
-import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_REMOVE;
-import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_TAG;
-import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_TOKEN;
-import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_USE_32_BIT_APP_PROCESS;
-import static frb.axeron.shared.AxeronApiConstant.server.USER_SERVICE_ARG_VERSION_CODE;
+import static frb.axeron.shared.ShizukuApiConstant.USER_SERVICE_ARG_COMPONENT;
+import static frb.axeron.shared.ShizukuApiConstant.USER_SERVICE_ARG_DAEMON;
+import static frb.axeron.shared.ShizukuApiConstant.USER_SERVICE_ARG_DEBUGGABLE;
+import static frb.axeron.shared.ShizukuApiConstant.USER_SERVICE_ARG_NO_CREATE;
+import static frb.axeron.shared.ShizukuApiConstant.USER_SERVICE_ARG_PGID;
+import static frb.axeron.shared.ShizukuApiConstant.USER_SERVICE_ARG_PROCESS_NAME;
+import static frb.axeron.shared.ShizukuApiConstant.USER_SERVICE_ARG_REMOVE;
+import static frb.axeron.shared.ShizukuApiConstant.USER_SERVICE_ARG_TAG;
+import static frb.axeron.shared.ShizukuApiConstant.USER_SERVICE_ARG_TOKEN;
+import static frb.axeron.shared.ShizukuApiConstant.USER_SERVICE_ARG_USE_32_BIT_APP_PROCESS;
+import static frb.axeron.shared.ShizukuApiConstant.USER_SERVICE_ARG_VERSION_CODE;
 
 import android.annotation.SuppressLint;
 import android.content.ComponentName;

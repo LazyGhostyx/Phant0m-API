@@ -14,11 +14,11 @@ import frb.axeron.server.util.Logger
 import frb.axeron.server.util.OsUtils
 import frb.axeron.server.util.UserHandleCompat
 import frb.axeron.shared.AxeronApiConstant
-import frb.axeron.shared.AxeronApiConstant.server.ATTACH_APPLICATION_API_VERSION
-import frb.axeron.shared.AxeronApiConstant.server.ATTACH_APPLICATION_PACKAGE_NAME
-import frb.axeron.shared.AxeronApiConstant.server.BINDER_TRANSACTION_transact
-import frb.axeron.shared.AxeronApiConstant.server.SHIZUKU_SERVER_VERSION
 import frb.axeron.shared.PathHelper
+import frb.axeron.shared.ShizukuApiConstant.ATTACH_APPLICATION_API_VERSION
+import frb.axeron.shared.ShizukuApiConstant.ATTACH_APPLICATION_PACKAGE_NAME
+import frb.axeron.shared.ShizukuApiConstant.BINDER_TRANSACTION_transact
+import frb.axeron.shared.ShizukuApiConstant.SHIZUKU_SERVER_VERSION
 import moe.shizuku.server.IShizukuApplication
 import moe.shizuku.server.IShizukuServiceConnection
 import rikka.hidden.compat.PackageManagerApis
@@ -35,7 +35,7 @@ import kotlin.system.exitProcess
 
 abstract class Service<UserServiceMgr : UserServiceManager,
         ClientMgr : ClientManager<ConfigMgr>,
-        ConfigMgr : ConfigManager> : IAxeronService.Stub(){
+        ConfigMgr : ConfigManager> : IAxeronService.Stub() {
 
     var userServiceManager: UserServiceMgr
     var configManager: ConfigMgr
@@ -78,7 +78,11 @@ abstract class Service<UserServiceMgr : UserServiceManager,
         }
     }
 
-    abstract fun checkCallerManagerPermission(func: String?, callingUid: Int, callingPid: Int): Boolean
+    abstract fun checkCallerManagerPermission(
+        func: String?,
+        callingUid: Int,
+        callingPid: Int
+    ): Boolean
 
     fun enforceManagerPermission(func: String) {
         val callingUid = getCallingUid()
@@ -266,11 +270,15 @@ abstract class Service<UserServiceMgr : UserServiceManager,
             return
         }
 
+        LOGGER.i("requestPermission1: uid=%d, pid=%d", callingUid, callingPid)
+
         val entry: ConfigPackageEntry? = configManager.find(callingUid)
         if (clientRecord != null && entry != null && entry.isDenied()) {
             clientRecord.dispatchRequestPermissionResult(requestCode, false)
             return
         }
+
+        LOGGER.i("requestPermission2: uid=%d, pid=%d", callingUid, callingPid)
 
         showPermissionConfirmation(requestCode, clientRecord, callingUid, callingPid, userId)
     }
@@ -283,7 +291,14 @@ abstract class Service<UserServiceMgr : UserServiceManager,
         userId: Int
     )
 
+    //if true they need to request permission manually
     override fun shouldShowRequestPermissionRationale(): Boolean {
+        LOGGER.i(
+            "shouldShowRequestPermissionRationale: uid=%d, pid=%d",
+            getCallingUid(),
+            getCallingPid()
+        )
+
         val callingUid = getCallingUid()
         val callingPid = getCallingPid()
 
@@ -295,6 +310,7 @@ abstract class Service<UserServiceMgr : UserServiceManager,
 
         val entry: ConfigPackageEntry? = configManager.find(callingUid)
         return entry != null && entry.isDenied()
+//        return false
     }
 
     private var firstInitFlag = true
@@ -476,7 +492,6 @@ abstract class Service<UserServiceMgr : UserServiceManager,
 
     @Throws(RemoteException::class)
     override fun onTransact(code: Int, data: Parcel, reply: Parcel?, flags: Int): Boolean {
-        LOGGER.i("onTransact: uid=%d, code=%d", getCallingUid(), code)
         if (code == BINDER_TRANSACTION_transact) {
             data.enforceInterface(AxeronApiConstant.server.BINDER_DESCRIPTOR)
             transactRemote(data, reply, flags)
