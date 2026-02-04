@@ -273,8 +273,8 @@ abstract class Service<UserServiceMgr : UserServiceManager,
         LOGGER.i("requestPermission1: uid=%d, pid=%d", callingUid, callingPid)
 
         val entry: ConfigPackageEntry? = configManager.find(callingUid)
-        if (clientRecord != null && entry != null && entry.isDenied()) {
-            clientRecord.dispatchRequestPermissionResult(requestCode, false)
+        if (clientRecord != null && entry != null && entry.isAllowed()) {
+            clientRecord.dispatchRequestPermissionResult(requestCode, true)
             return
         }
 
@@ -309,7 +309,7 @@ abstract class Service<UserServiceMgr : UserServiceManager,
         clientManager.requireClient(callingUid, callingPid)
 
         val entry: ConfigPackageEntry? = configManager.find(callingUid)
-        return entry != null && entry.isDenied()
+        return entry != null && !entry.isDenied()
 //        return false
     }
 
