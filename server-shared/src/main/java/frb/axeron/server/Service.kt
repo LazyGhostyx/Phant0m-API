@@ -10,6 +10,7 @@ import android.os.RemoteException
 import android.os.SystemProperties
 import android.system.Os
 import frb.axeron.server.api.FileServiceHolder
+import frb.axeron.server.api.ShizukuIntercept
 import frb.axeron.server.util.Logger
 import frb.axeron.server.util.OsUtils
 import frb.axeron.server.util.UserHandleCompat
@@ -35,7 +36,7 @@ import kotlin.system.exitProcess
 
 abstract class Service<UserServiceMgr : UserServiceManager,
         ClientMgr : ClientManager<ConfigMgr>,
-        ConfigMgr : ConfigManager> : IAxeronService.Stub() {
+        ConfigMgr : ConfigManager> : IAxeronService.Stub(), ShizukuIntercept {
 
     var userServiceManager: UserServiceMgr
     var configManager: ConfigMgr
@@ -144,7 +145,7 @@ abstract class Service<UserServiceMgr : UserServiceManager,
 
     @Synchronized
     @Throws(RemoteException::class)
-    fun transactRemote(data: Parcel, reply: Parcel?, flags: Int) {
+    override fun transactRemote(data: Parcel, reply: Parcel?, flags: Int) {
         enforceCallingPermission("transactRemote")
 
         val targetBinder = data.readStrongBinder()
