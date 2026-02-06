@@ -16,7 +16,7 @@ public class AxeronApiConstant {
         String ROOT = "/";
         String TMP = "data/local/tmp/";
         String ADB = "data/adb/";
-        String ROOT_DE = "data/user_de/0/";
+        String ROOT_DE = "data/user_de/0/android/";
         String SHELL_DE = "data/user_de/0/com.android.shell/";
         String PARENT = "axeron/";
         String PLUGIN = "plugins/";
