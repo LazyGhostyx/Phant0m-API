@@ -1,6 +1,6 @@
 val apiVersionMajor = 1
 val apiVersionMinor = 4
-val apiVersionPatch = 420
+val apiVersionPatch = 500
 
 val patchDigits = apiVersionPatch.toString().length
 
