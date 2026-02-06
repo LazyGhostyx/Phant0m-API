@@ -307,11 +307,14 @@ abstract class Service<UserServiceMgr : UserServiceManager,
             return true
         }
 
-        clientManager.requireClient(callingUid, callingPid)
+        val clientRecord = clientManager.requireClient(callingUid, callingPid)
+
+        if (!clientRecord.allowed) {
+            return false
+        }
 
         val entry: ConfigPackageEntry? = configManager.find(callingUid)
-        return entry != null && !entry.isDenied()
-//        return false
+        return entry != null && entry.isAllowed
     }
 
     private var firstInitFlag = true
