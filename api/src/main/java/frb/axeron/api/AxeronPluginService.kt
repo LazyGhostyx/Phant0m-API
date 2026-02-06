@@ -566,7 +566,8 @@ object AxeronPluginService {
 
             val cmd =
                 "$BUSYBOX unzip -p $BASEAPK assets/scripts/$filename > ${dstFile.absolutePath}" +
-                        " && chmod 755 ${dstFile.absolutePath}"
+                        " && chmod 755 ${dstFile.absolutePath}" +
+                        $$" && (grep -q $'\\x00' $${dstFile.absolutePath} || dos2unix $${dstFile.absolutePath})"
 
             val result = execWithIO(cmd, hideStderr = false)
 
