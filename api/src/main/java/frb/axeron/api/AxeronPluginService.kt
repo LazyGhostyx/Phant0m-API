@@ -564,10 +564,12 @@ object AxeronPluginService {
 
             if (axFS.exists(dstFile.absolutePath)) continue
 
+            val dst = dstFile.absolutePath
+
             val cmd =
-                "$BUSYBOX unzip -p $BASEAPK assets/scripts/$filename > ${dstFile.absolutePath}" +
-                        " && chmod 755 ${dstFile.absolutePath}" +
-                        $$" && (grep -q $'\\x00' $${dstFile.absolutePath} || dos2unix $${dstFile.absolutePath})"
+                "$BUSYBOX unzip -p $BASEAPK assets/scripts/$filename > $dst" +
+                        " && chmod 755 $dst" +
+                        " && (file -b $dst | grep -Eqi 'text|script' && dos2unix $dst || true)"
 
             val result = execWithIO(cmd, hideStderr = false)
 
