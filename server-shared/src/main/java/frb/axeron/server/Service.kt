@@ -205,13 +205,13 @@ abstract class Service<UserServiceMgr : UserServiceManager,
         }
     }
 
-    override fun removeUserService(conn: IShizukuServiceConnection?, options: Bundle?): Int {
+    override fun removeUserService(conn: IShizukuServiceConnection?, args: Bundle?): Int {
         enforceCallingPermission("removeUserService")
 
-        return userServiceManager.removeUserService(conn, options)
+        return userServiceManager.removeUserService(conn, args)
     }
 
-    override fun addUserService(conn: IShizukuServiceConnection?, options: Bundle?): Int {
+    override fun addUserService(conn: IShizukuServiceConnection?, args: Bundle?): Int {
         enforceCallingPermission("addUserService")
 
         LOGGER.i("addUserService: uid=%d", getCallingUid())
@@ -223,7 +223,7 @@ abstract class Service<UserServiceMgr : UserServiceManager,
         val clientRecord: ClientRecord? =
             clientManager.findClient(callingUid, callingPid)
         callingApiVersion = clientRecord?.apiVersion ?: SHIZUKU_SERVER_VERSION
-        return userServiceManager.addUserService(conn, options, callingApiVersion)
+        return userServiceManager.addUserService(conn, args, callingApiVersion)
     }
 
     override fun attachUserService(binder: IBinder?, options: Bundle) {

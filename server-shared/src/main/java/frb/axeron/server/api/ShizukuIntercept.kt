@@ -1,6 +1,7 @@
 package frb.axeron.server.api
 
 import android.content.Intent
+import android.content.pm.PackageInfo
 import android.os.Bundle
 import android.os.IBinder
 import android.os.Parcel
@@ -9,6 +10,7 @@ import frb.axeron.server.ServerInfo
 import moe.shizuku.server.IRemoteProcess
 import moe.shizuku.server.IShizukuApplication
 import moe.shizuku.server.IShizukuServiceConnection
+import rikka.parcelablelist.ParcelableListSlice
 
 interface ShizukuIntercept {
     fun getServerInfo(): ServerInfo
@@ -36,4 +38,5 @@ interface ShizukuIntercept {
 
     fun getFlagsForUid(uid: Int, mask: Int): Int
     fun updateFlagsForUid(uid: Int, mask: Int, value: Int)
+    fun getApplications(userId: Int): ParcelableListSlice<PackageInfo?>
 }
