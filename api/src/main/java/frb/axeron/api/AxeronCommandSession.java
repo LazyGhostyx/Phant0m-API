@@ -148,15 +148,16 @@ public class AxeronCommandSession {
 
         errThread = new Thread(() -> {
             try {
-                String line;
+                char[] buffer = new char[1024 * 8];
+                int bytesRead;
 
-                while ((line = bufferedError.readLine()) != null) {
-                    String finalLine = line;
+                while ((bytesRead = bufferedError.read(buffer)) != -1) {
+                    String finalLine = new String(buffer, 0, bytesRead);
                     Log.d("CmdOut", "error: " + finalLine);
                     Log.d("CmdOut", "isProcess: " + isProcessRunning.get());
 
                     // Jika bukan PID, teruskan ke error handler
-                    if (!isProcessRunning.get() && finalLine.matches("^\\d+$")) {
+                    if (!isProcessRunning.get() && finalLine.trim().matches("^\\d+$")) {
                         pid.set(Integer.parseInt(finalLine.trim()));
                         Log.d("CmdOut", "pid: " + pid.get());
                         isProcessRunning.set(true);
