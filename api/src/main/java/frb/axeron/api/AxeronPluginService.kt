@@ -462,7 +462,9 @@ object AxeronPluginService {
         // 2) jalankan igniter secara native (langsung panggil class)
         out("- Running igniter (native)")
         runCatching {
-            igniteSuspendService(false)
+            igniteSuspendService(false,
+                onStdout,
+                onStderr)
         }.onFailure {
             err("!! Igniter crash: ${it.stackTraceToString()}")
             return@withContext FlashResult(-1, it.stackTraceToString(), false)
@@ -493,7 +495,9 @@ object AxeronPluginService {
 
     suspend fun execProcessSafe(
         cmd: Array<String>,
-        env: Environment? = null
+        env: Environment? = null,
+        onStdout: (String) -> Unit = {},
+        onStderr: (String) -> Unit = {}
     ): ExecResult = withContext(Dispatchers.IO) {
 
         val process = Axeron.newProcess(cmd, env, null)
@@ -503,13 +507,19 @@ object AxeronPluginService {
 
         val outJob = launch {
             process.inputStream.bufferedReader().useLines {
-                it.forEach { line -> stdout.appendLine(line) }
+                it.forEach { line ->
+                    onStdout(line)
+                    stdout.appendLine(line)
+                }
             }
         }
 
         val errJob = launch {
             process.errorStream.bufferedReader().useLines {
-                it.forEach { line -> stderr.appendLine(line) }
+                it.forEach { line ->
+                    onStderr(line)
+                    stderr.appendLine(line)
+                }
             }
         }
 
@@ -537,7 +547,11 @@ object AxeronPluginService {
         }
     }
 
-    suspend fun igniteSuspendService(ensure: Boolean = true): Boolean =
+    suspend fun igniteSuspendService(
+        ensure: Boolean = true,
+        onStdout: (String) -> Unit = {},
+        onStderr: (String) -> Unit = {}
+    ): Boolean =
         withContext(Dispatchers.IO) {
 
             val localVer = Axeron.getAxeronInfo().getVersionCode()
@@ -570,7 +584,9 @@ object AxeronPluginService {
 
             val result = execProcessSafe(
                 arrayOf(BUSYBOX, "sh", "-c", cmd),
-                Axeron.getEnvironment()
+                Axeron.getEnvironment(),
+                onStdout,
+                onStderr
             )
 
             if (result.stdout.isNotBlank()) Log.i(TAG, "STDOUT:\n${result.stdout}")
