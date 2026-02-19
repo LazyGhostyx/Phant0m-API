@@ -41,12 +41,23 @@ object AxeronPluginService {
     val ROOT_MODE
         get() = Axeron.getAxeronInfo().isRoot()
 
+    val AXERONDIR: String
+        get() = PathHelper.getWorkingPath(ROOT_MODE, AxeronApiConstant.folder.PARENT).absolutePath
     val AXERONBIN: String
-        get() = PathHelper.getWorkingPath(ROOT_MODE,AxeronApiConstant.folder.PARENT_BINARY).absolutePath
+        get() = PathHelper.getWorkingPath(
+            ROOT_MODE,
+            AxeronApiConstant.folder.PARENT_BINARY
+        ).absolutePath
     val PLUGINDIR: String
-        get() = PathHelper.getWorkingPath(ROOT_MODE,AxeronApiConstant.folder.PARENT_PLUGIN).absolutePath
+        get() = PathHelper.getWorkingPath(
+            ROOT_MODE,
+            AxeronApiConstant.folder.PARENT_PLUGIN
+        ).absolutePath
     val PLUGINUPDATEDIR: String
-        get() = PathHelper.getWorkingPath(ROOT_MODE,AxeronApiConstant.folder.PARENT_PLUGIN_UPDATE).absolutePath
+        get() = PathHelper.getWorkingPath(
+            ROOT_MODE,
+            AxeronApiConstant.folder.PARENT_PLUGIN_UPDATE
+        ).absolutePath
 
     val axFS
         get() = Axeron.newFileService()!!
@@ -154,7 +165,10 @@ object AxeronPluginService {
         val resolver = application.contentResolver
         with(resolver.openInputStream(installer.uri)) {
             val file =
-                File(PathHelper.getTmpPath(AxeronApiConstant.folder.PARENT_ZIP), "module.zip")
+                File(
+                    PathHelper.getWorkingPath(ROOT_MODE, AxeronApiConstant.folder.PARENT_ZIP),
+                    "module.zip"
+                )
 
             val fos = axFS.getStreamSession(file.absolutePath, true, false).outputStream
 
@@ -416,6 +430,59 @@ object AxeronPluginService {
     // IGNITER
     //===================================
 
+    suspend fun resetManagerNative(
+        onStdout: (String) -> Unit,
+        onStderr: (String) -> Unit,
+    ): FlashResult = withContext(Dispatchers.IO) {
+
+        fun out(s: String) = onStdout(s + "\n")
+        fun err(s: String) = onStderr(s + "\n")
+
+        out("Resetting AxManager")
+        out("at $AXERONDIR")
+        out("- Removing plugins")
+
+        // 1) mark plugin remove
+        val pluginsDir = axFS.getDirectories(PLUGINDIR)
+        if (pluginsDir.isEmpty()) {
+            out("- No plugins directory")
+        } else {
+            pluginsDir.filter {
+                it.isDirectory
+            }.forEach { pluginDir ->
+                out("- Mark to remove ${pluginDir.path}")
+                runCatching {
+                    axFS.createNewFile(File(pluginDir.path, "remove").absolutePath)
+                }.onFailure {
+                    err("!! failed touch ${pluginDir.path}/remove : ${it.message}")
+                }
+            }
+        }
+
+        // 2) jalankan igniter secara native (langsung panggil class)
+        out("- Running igniter (native)")
+        runCatching {
+            igniteSuspendService(false)
+        }.onFailure {
+            err("!! Igniter crash: ${it.stackTraceToString()}")
+            return@withContext FlashResult(-1, it.stackTraceToString(), false)
+        }
+
+        // 3) hapus folder
+        out("- Removing AXERONDIR")
+        runCatching {
+            execWithIO("rm -rf \"$AXERONDIR\"")
+        }.getOrElse {
+            err("!! deleteRecursively error: ${it.message}")
+            false
+        }
+
+        out("Complete")
+
+        FlashResult(0, "", true)
+    }
+
+
     data class ExecResult(
         val exitCode: Int,
         val stdout: String,
@@ -463,7 +530,6 @@ object AxeronPluginService {
         }
     }
 
-
     @JvmStatic
     fun igniteService(): Boolean {
         return runBlocking(Dispatchers.IO) {
@@ -471,44 +537,47 @@ object AxeronPluginService {
         }
     }
 
-    suspend fun igniteSuspendService(): Boolean = withContext(Dispatchers.IO) {
+    suspend fun igniteSuspendService(ensure: Boolean = true): Boolean =
+        withContext(Dispatchers.IO) {
 
-        val localVer = Axeron.getAxeronInfo().getVersionCode()
-        val serverVer = AxeronApiConstant.server.VERSION_CODE
+            val localVer = Axeron.getAxeronInfo().getVersionCode()
+            val serverVer = AxeronApiConstant.server.VERSION_CODE
 
-        if (serverVer > localVer) {
-            Log.i(TAG, "Updating.. $localVer < $serverVer")
-            return@withContext false
+            if (serverVer > localVer) {
+                Log.i(TAG, "Updating.. $localVer < $serverVer")
+                return@withContext false
+            }
+
+            if (Axeron.isFirstInit(true)) {
+                Log.i(TAG, "First Init: Removing old bin")
+                removeScripts()
+                removeLibrary()
+                fsBarrier()
+            }
+
+            if (ensure) {
+                if (!ensureLibrary()) return@withContext false
+                fsBarrier()
+
+                if (!ensureScripts()) return@withContext false
+                fsBarrier()
+            }
+
+            val cmd =
+                "CLASSPATH=$AXERONBIN/ax_reignite.dex; app_process / frb.axeron.reignite.Igniter ${AxeronSettings.getEnableDeveloperOptions()}"
+
+            Log.d(TAG, "Start Init Service")
+
+            val result = execProcessSafe(
+                arrayOf(BUSYBOX, "sh", "-c", cmd),
+                Axeron.getEnvironment()
+            )
+
+            if (result.stdout.isNotBlank()) Log.i(TAG, "STDOUT:\n${result.stdout}")
+            if (result.stderr.isNotBlank()) Log.e(TAG, "STDERR:\n${result.stderr}")
+
+            result.isSuccess()
         }
-
-        if (Axeron.isFirstInit(true)) {
-            Log.i(TAG, "First Init: Removing old bin")
-            removeScripts()
-            removeLibrary()
-            fsBarrier()
-        }
-
-        if (!ensureLibrary()) return@withContext false
-        fsBarrier()
-
-        if (!ensureScripts()) return@withContext false
-        fsBarrier()
-
-        val cmd =
-            "CLASSPATH=$AXERONBIN/ax_reignite.dex; app_process / frb.axeron.reignite.Igniter ${AxeronSettings.getEnableDeveloperOptions()}"
-
-        Log.d(TAG, "Start Init Service")
-
-        val result = execProcessSafe(
-            arrayOf(BUSYBOX, "sh", "-c", cmd),
-            Axeron.getEnvironment()
-        )
-
-        if (result.stdout.isNotBlank()) Log.i(TAG, "STDOUT:\n${result.stdout}")
-        if (result.stderr.isNotBlank()) Log.e(TAG, "STDERR:\n${result.stderr}")
-
-        result.isSuccess()
-    }
 
 
     suspend fun removeScripts() = withContext(Dispatchers.IO) {
