@@ -1,4 +1,4 @@
-package frb.axeron.api;
+package xyz.lazyghosty.phant0m.api;
 
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
@@ -23,36 +23,36 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import frb.axeron.api.utils.Excluder;
-import frb.axeron.server.FileStat;
-import frb.axeron.server.IFileService;
-import frb.axeron.server.IOutputStreamCallback;
+import frb.phant0m.api.utils.Excluder;
+import frb.phant0m.server.FileStat;
+import frb.phant0m.server.IFileService;
+import frb.phant0m.server.IOutputStreamCallback;
 
-public class AxeronFileService implements Parcelable {
+public class Phant0mFileService implements Parcelable {
 
-    public static final Creator<AxeronFileService> CREATOR = new Creator<>() {
+    public static final Creator<Phant0mFileService> CREATOR = new Creator<>() {
         @Override
-        public AxeronFileService createFromParcel(Parcel in) {
-            return new AxeronFileService(in);
+        public Phant0mFileService createFromParcel(Parcel in) {
+            return new Phant0mFileService(in);
         }
 
         @Override
-        public AxeronFileService[] newArray(int size) {
-            return new AxeronFileService[size];
+        public Phant0mFileService[] newArray(int size) {
+            return new Phant0mFileService[size];
         }
     };
-    private static final Set<AxeronFileService> CACHE = Collections.synchronizedSet(new ArraySet<>());
+    private static final Set<Phant0mFileService> CACHE = Collections.synchronizedSet(new ArraySet<>());
     private IFileService fileService;
-    private static final String TAG = "AxeronFileService";
+    private static final String TAG = "Phant0mFileService";
 
-    public AxeronFileService(IFileService fileService) {
+    public Phant0mFileService(IFileService fileService) {
         this.fileService = fileService;
         try {
             this.fileService.asBinder().linkToDeath(() -> {
                 this.fileService = null;
-                Log.v(TAG, "AxeronFileService is dead");
+                Log.v(TAG, "Phant0mFileService is dead");
 
-                CACHE.remove(AxeronFileService.this);
+                CACHE.remove(Phant0mFileService.this);
             }, 0);
         } catch (RemoteException e) {
             Log.e(TAG, "linkToDeath", e);
@@ -65,7 +65,7 @@ public class AxeronFileService implements Parcelable {
     private IFileService getFS() {
         if (fileService != null) return fileService;
         try {
-            fileService = Axeron.requireService().getFileService();
+            fileService = Phant0m.requireService().getFileService();
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
@@ -76,7 +76,7 @@ public class AxeronFileService implements Parcelable {
         return new File(rootPath).toURI().relativize(new File(fullPath).toURI()).getPath();
     }
 
-    protected AxeronFileService(Parcel in) {
+    protected Phant0mFileService(Parcel in) {
         fileService = IFileService.Stub.asInterface(in.readStrongBinder());
     }
 

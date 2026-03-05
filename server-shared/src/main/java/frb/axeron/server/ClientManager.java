@@ -1,4 +1,4 @@
-package frb.axeron.server;
+package xyz.lazyghosty.phant0m.server;
 
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import frb.axeron.server.util.Logger;
+import frb.phant0m.server.util.Logger;
 import moe.shizuku.server.IShizukuApplication;
 
 public class ClientManager<ConfigMgr extends ConfigManager> {

@@ -1,10 +1,10 @@
-package frb.axeron.server;
+package xyz.lazyghosty.phant0m.server;
 
 import androidx.annotation.Nullable;
 
 import java.util.List;
 
-import frb.axeron.server.util.Logger;
+import frb.phant0m.server.util.Logger;
 
 public abstract class ConfigManager {
 

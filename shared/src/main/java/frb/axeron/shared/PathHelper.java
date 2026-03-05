@@ -1,4 +1,4 @@
-package frb.axeron.shared;
+package xyz.lazyghosty.phant0m.shared;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -17,21 +17,21 @@ public class PathHelper {
 
     @Deprecated
     public static File getWorkingPath(String folderName) {
-        if (folderName == null) return new File(AxeronApiConstant.folder.SHELL_DE);
-        return new File(AxeronApiConstant.folder.SHELL_DE, folderName);
+        if (folderName == null) return new File(Phant0mApiConstant.folder.SHELL_DE);
+        return new File(Phant0mApiConstant.folder.SHELL_DE, folderName);
     }
 
     public static File getWorkingPath(boolean rootMode, String folderName) {
         if (rootMode) {
-            if (folderName == null) return new File(AxeronApiConstant.folder.ROOT_DE);
-            return new File(AxeronApiConstant.folder.ROOT_DE, folderName);
+            if (folderName == null) return new File(Phant0mApiConstant.folder.ROOT_DE);
+            return new File(Phant0mApiConstant.folder.ROOT_DE, folderName);
         }
-        if (folderName == null) return new File(AxeronApiConstant.folder.SHELL_DE);
-        return new File(AxeronApiConstant.folder.SHELL_DE, folderName);
+        if (folderName == null) return new File(Phant0mApiConstant.folder.SHELL_DE);
+        return new File(Phant0mApiConstant.folder.SHELL_DE, folderName);
     }
 
     public static File getTmpPath(String folderName) {
-        return new File(AxeronApiConstant.folder.TMP, folderName);
+        return new File(Phant0mApiConstant.folder.TMP, folderName);
     }
 
     public static String getRelativePath(String rootPath, String fullPath) {

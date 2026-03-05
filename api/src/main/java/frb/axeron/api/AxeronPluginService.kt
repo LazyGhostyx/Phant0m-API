@@ -1,4 +1,4 @@
-package frb.axeron.api
+package xyz.lazyghosty.phant0m.api
 
 import android.app.AppOpsManager
 import android.content.Context
@@ -9,12 +9,12 @@ import android.os.Looper
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.google.gson.annotations.SerializedName
-import frb.axeron.api.core.AxeronSettings
-import frb.axeron.api.core.Engine.Companion.application
-import frb.axeron.server.Environment
-import frb.axeron.server.PluginInstaller
-import frb.axeron.shared.AxeronApiConstant
-import frb.axeron.shared.PathHelper
+import frb.phant0m.api.core.Phant0mSettings
+import frb.phant0m.api.core.Engine.Companion.application
+import frb.phant0m.server.Environment
+import frb.phant0m.server.PluginInstaller
+import frb.phant0m.shared.Phant0mApiConstant
+import frb.phant0m.shared.PathHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -28,7 +28,7 @@ import java.io.File
 import java.util.concurrent.CompletableFuture
 
 
-object AxeronPluginService {
+object Phant0mPluginService {
     const val TAG = "PluginService"
 
     val BUSYBOX: String
@@ -39,28 +39,28 @@ object AxeronPluginService {
         get() = application.applicationInfo.sourceDir
 
     val ROOT_MODE
-        get() = Axeron.getAxeronInfo().isRoot()
+        get() = Phant0m.getPhant0mInfo().isRoot()
 
-    val AXERONDIR: String
-        get() = PathHelper.getWorkingPath(ROOT_MODE, AxeronApiConstant.folder.PARENT).absolutePath
-    val AXERONBIN: String
+    val PHANT0MDIR: String
+        get() = PathHelper.getWorkingPath(ROOT_MODE, Phant0mApiConstant.folder.PARENT).absolutePath
+    val PHANT0MBIN: String
         get() = PathHelper.getWorkingPath(
             ROOT_MODE,
-            AxeronApiConstant.folder.PARENT_BINARY
+            Phant0mApiConstant.folder.PARENT_BINARY
         ).absolutePath
     val PLUGINDIR: String
         get() = PathHelper.getWorkingPath(
             ROOT_MODE,
-            AxeronApiConstant.folder.PARENT_PLUGIN
+            Phant0mApiConstant.folder.PARENT_PLUGIN
         ).absolutePath
     val PLUGINUPDATEDIR: String
         get() = PathHelper.getWorkingPath(
             ROOT_MODE,
-            AxeronApiConstant.folder.PARENT_PLUGIN_UPDATE
+            Phant0mApiConstant.folder.PARENT_PLUGIN_UPDATE
         ).absolutePath
 
     val axFS
-        get() = Axeron.newFileService()!!
+        get() = Phant0m.newFileService()!!
 
     fun getUid(context: Context, packageName: String): Int? =
         try {
@@ -87,7 +87,7 @@ object AxeronPluginService {
     }
 
     fun allowManageExternalStorageUid(uid: Int): Int {
-        return Axeron.newProcess(
+        return Phant0m.newProcess(
             arrayOf(
                 "sh",
                 "-c",
@@ -166,7 +166,7 @@ object AxeronPluginService {
         with(resolver.openInputStream(installer.uri)) {
             val file =
                 File(
-                    PathHelper.getWorkingPath(ROOT_MODE, AxeronApiConstant.folder.PARENT_ZIP),
+                    PathHelper.getWorkingPath(ROOT_MODE, Phant0mApiConstant.folder.PARENT_ZIP),
                     "module.zip"
                 )
 
@@ -219,10 +219,10 @@ object AxeronPluginService {
 
         Log.d(TAG, "execWithIO: $cmd")
 
-        val process = Axeron.newProcess(
+        val process = Phant0m.newProcess(
             if (useSetsid) arrayOf(BUSYBOX, "setsid", "sh")
             else arrayOf(BUSYBOX, "sh"),
-            Axeron.getEnvironment(),
+            Phant0m.getEnvironment(),
             null
         )
 
@@ -304,9 +304,9 @@ object AxeronPluginService {
 
             val result = runCatching {
 
-                val process = Axeron.newProcess(
+                val process = Phant0m.newProcess(
                     arrayOf("sh"),
-                    Axeron.getEnvironment(),
+                    Phant0m.getEnvironment(),
                     null
                 )
 
@@ -438,8 +438,8 @@ object AxeronPluginService {
         fun out(s: String) = onStdout(s + "\n")
         fun err(s: String) = onStderr(s + "\n")
 
-        out("Resetting AxManager")
-        out("at $AXERONDIR")
+        out("Resetting Phant0m")
+        out("at $PHANT0MDIR")
         out("- Removing plugins")
 
         // 1) mark plugin remove
@@ -471,9 +471,9 @@ object AxeronPluginService {
         }
 
         // 3) hapus folder
-        out("- Removing AXERONDIR")
+        out("- Removing PHANT0MDIR")
         runCatching {
-            execWithIO("rm -rf \"$AXERONDIR\"")
+            execWithIO("rm -rf \"$PHANT0MDIR\"")
         }.getOrElse {
             err("!! deleteRecursively error: ${it.message}")
             false
@@ -500,7 +500,7 @@ object AxeronPluginService {
         onStderr: (String) -> Unit = {}
     ): ExecResult = withContext(Dispatchers.IO) {
 
-        val process = Axeron.newProcess(cmd, env, null)
+        val process = Phant0m.newProcess(cmd, env, null)
 
         val stdout = StringBuilder()
         val stderr = StringBuilder()
@@ -554,15 +554,15 @@ object AxeronPluginService {
     ): Boolean =
         withContext(Dispatchers.IO) {
 
-            val localVer = Axeron.getAxeronInfo().getVersionCode()
-            val serverVer = AxeronApiConstant.server.VERSION_CODE
+            val localVer = Phant0m.getPhant0mInfo().getVersionCode()
+            val serverVer = Phant0mApiConstant.server.VERSION_CODE
 
             if (serverVer > localVer) {
                 Log.i(TAG, "Updating.. $localVer < $serverVer")
                 return@withContext false
             }
 
-            if (Axeron.isFirstInit(true)) {
+            if (Phant0m.isFirstInit(true)) {
                 Log.i(TAG, "First Init: Removing old bin")
                 removeScripts()
                 removeLibrary()
@@ -578,13 +578,13 @@ object AxeronPluginService {
             }
 
             val cmd =
-                "CLASSPATH=$AXERONBIN/ax_reignite.dex; app_process / frb.axeron.reignite.Igniter ${AxeronSettings.getEnableDeveloperOptions()}"
+                "CLASSPATH=$PHANT0MBIN/ax_reignite.dex; app_process / frb.phant0m.reignite.Igniter ${Phant0mSettings.getEnableDeveloperOptions()}"
 
             Log.d(TAG, "Start Init Service")
 
             val result = execProcessSafe(
                 arrayOf(BUSYBOX, "sh", "-c", cmd),
-                Axeron.getEnvironment(),
+                Phant0m.getEnvironment(),
                 onStdout,
                 onStderr
             )
@@ -601,7 +601,7 @@ object AxeronPluginService {
         if (files.isEmpty()) return@withContext
 
         for (filename in files) {
-            val dstFile = File(AXERONBIN, filename)
+            val dstFile = File(PHANT0MBIN, filename)
             if (!axFS.exists(dstFile.absolutePath)) continue
 
             if (!axFS.delete(dstFile.absolutePath)) {
@@ -614,14 +614,14 @@ object AxeronPluginService {
     }
 
     suspend fun removeLibrary() = withContext(Dispatchers.IO) {
-        val dstBusybox = File(AXERONBIN, "busybox")
+        val dstBusybox = File(PHANT0MBIN, "busybox")
 
         if (axFS.exists(dstBusybox.absolutePath)) {
             if (!axFS.delete(dstBusybox.absolutePath)) {
                 return@withContext
             }
 
-            val cmd = "find $AXERONBIN -type l -delete"
+            val cmd = "find $PHANT0MBIN -type l -delete"
             val result = execWithIO(cmd, useBusybox = false, hideStderr = false)
 
             if (!result.isSuccess()) {
@@ -631,7 +631,7 @@ object AxeronPluginService {
 
             Log.i(TAG, "symlink from busybox removed")
         }
-        val dstResetprop = File(AXERONBIN, "resetprop")
+        val dstResetprop = File(PHANT0MBIN, "resetprop")
         if (axFS.exists(dstResetprop.absolutePath)) {
             axFS.delete(dstResetprop.absolutePath)
         }
@@ -641,11 +641,11 @@ object AxeronPluginService {
         val files = application.assets.list("scripts") ?: return@withContext false
         if (files.isEmpty()) return@withContext false
 
-        if (!axFS.exists(AXERONBIN) && !axFS.mkdirs(AXERONBIN)) return@withContext false
+        if (!axFS.exists(PHANT0MBIN) && !axFS.mkdirs(PHANT0MBIN)) return@withContext false
 
         for (filename in files) {
             val inPath = "assets/scripts/$filename"
-            val dstFile = File(AXERONBIN, filename)
+            val dstFile = File(PHANT0MBIN, filename)
 
             if (axFS.exists(dstFile.absolutePath)) continue
 
@@ -670,16 +670,16 @@ object AxeronPluginService {
 
     suspend fun ensureLibrary(): Boolean = withContext(Dispatchers.IO) {
         return@withContext try {
-            if (!axFS.exists(AXERONBIN) && !axFS.mkdirs(AXERONBIN)) return@withContext false
+            if (!axFS.exists(PHANT0MBIN) && !axFS.mkdirs(PHANT0MBIN)) return@withContext false
 
-            val dstBusyBox = File(AXERONBIN, "busybox")
-            val dstResetProp = File(AXERONBIN, "resetprop")
+            val dstBusyBox = File(PHANT0MBIN, "busybox")
+            val dstResetProp = File(PHANT0MBIN, "resetprop")
 
             if (axFS.exists(dstBusyBox.absolutePath) && axFS.exists(dstResetProp.absolutePath)) return@withContext true
 
             val cmdBB =
                 "cp $BUSYBOX ${dstBusyBox.absolutePath} && chmod 755 ${dstBusyBox.absolutePath}" +
-                        " && ${dstBusyBox.absolutePath} --install -s $AXERONBIN"
+                        " && ${dstBusyBox.absolutePath} --install -s $PHANT0MBIN"
 
             val rBB = execWithIO(cmdBB, useBusybox = false, hideStderr = false)
             if (!rBB.isSuccess()) {

@@ -1,4 +1,4 @@
-package frb.axeron.api.core;
+package xyz.lazyghosty.phant0m.api.core;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
@@ -15,10 +15,10 @@ import androidx.annotation.Nullable;
 import java.lang.annotation.Retention;
 import java.util.Locale;
 
-import frb.axeron.api.utils.EmptySharedPreferencesImpl;
+import frb.phant0m.api.utils.EmptySharedPreferencesImpl;
 
 
-public class AxeronSettings {
+public class Phant0mSettings {
 
     public static final String NAME = "settings";
     public static final String APP_THEME_ID = "app_theme_id";

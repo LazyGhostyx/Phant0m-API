@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "frb.axeron.api"
+    namespace = "frb.phant0m.api"
 
     defaultConfig {
         consumerProguardFiles("consumer-rules.pro")

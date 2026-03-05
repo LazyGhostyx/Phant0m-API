@@ -1,4 +1,4 @@
-package frb.axeron.api;
+package xyz.lazyghosty.phant0m.api;
 
 import android.os.IBinder;
 import android.os.IInterface;
@@ -11,12 +11,12 @@ import androidx.annotation.Nullable;
 import java.io.FileDescriptor;
 import java.util.Objects;
 
-import frb.axeron.server.IAxeronService;
+import frb.phant0m.server.IPhant0mService;
 
-public class AxeronBinderWrapper implements IBinder {
+public class Phant0mBinderWrapper implements IBinder {
     private final IBinder original;
 
-    public AxeronBinderWrapper(@NonNull IBinder original) {
+    public Phant0mBinderWrapper(@NonNull IBinder original) {
         this.original = Objects.requireNonNull(original);
     }
 
@@ -24,12 +24,12 @@ public class AxeronBinderWrapper implements IBinder {
     public boolean transact(int code, @NonNull Parcel data, @Nullable Parcel reply, int flags) throws RemoteException {
         Parcel newData = Parcel.obtain();
         try {
-            newData.writeInterfaceToken(IAxeronService.DESCRIPTOR);
+            newData.writeInterfaceToken(IPhant0mService.DESCRIPTOR);
             newData.writeStrongBinder(original);
             newData.writeInt(code);
             newData.writeInt(flags);
             newData.appendFrom(data, 0, data.dataSize());
-            Axeron.transactRemote(newData, reply, 0);
+            Phant0m.transactRemote(newData, reply, 0);
         } finally {
             newData.recycle();
         }

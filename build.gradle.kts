@@ -29,7 +29,7 @@ subprojects {
     plugins.withId("com.android.application") {
         extensions.configure<ApplicationExtension> {
             compileSdk = 36
-            buildToolsVersion = "36.0.0"
+            buildToolsVersion = "36.1.0"
             ndkVersion = "29.0.14206865"
             defaultConfig {
                 minSdk = 26
@@ -46,7 +46,7 @@ subprojects {
     plugins.withId("com.android.library") {
         extensions.configure<LibraryExtension> {
             compileSdk = 36
-            buildToolsVersion = "36.0.0"
+            buildToolsVersion = "36.1.0"
             ndkVersion = "29.0.14206865"
             defaultConfig {
                 minSdk = 26
@@ -90,7 +90,7 @@ subprojects {
             """.trimIndent()
             )
 
-            val groupIdBase = "dev.frb.axeron"
+            val groupIdBase = "dev.frb.phant0m"
 
             val publishLibrary =
                 (findProperty("publishLibrary") as? Boolean) ?: false

@@ -1,4 +1,4 @@
-package frb.axeron.server
+package xyz.lazyghosty.phant0m.server
 
 import android.content.pm.PackageInfo
 import android.os.Bundle
@@ -9,17 +9,17 @@ import android.os.Parcel
 import android.os.RemoteException
 import android.os.SystemProperties
 import android.system.Os
-import frb.axeron.server.api.FileServiceHolder
-import frb.axeron.server.api.ShizukuIntercept
-import frb.axeron.server.util.Logger
-import frb.axeron.server.util.OsUtils
-import frb.axeron.server.util.UserHandleCompat
-import frb.axeron.shared.AxeronApiConstant
-import frb.axeron.shared.PathHelper
-import frb.axeron.shared.ShizukuApiConstant.ATTACH_APPLICATION_API_VERSION
-import frb.axeron.shared.ShizukuApiConstant.ATTACH_APPLICATION_PACKAGE_NAME
-import frb.axeron.shared.ShizukuApiConstant.BINDER_TRANSACTION_transact
-import frb.axeron.shared.ShizukuApiConstant.SHIZUKU_SERVER_VERSION
+import frb.phant0m.server.api.FileServiceHolder
+import frb.phant0m.server.api.ShizukuIntercept
+import frb.phant0m.server.util.Logger
+import frb.phant0m.server.util.OsUtils
+import frb.phant0m.server.util.UserHandleCompat
+import frb.phant0m.shared.Phant0mApiConstant
+import frb.phant0m.shared.PathHelper
+import frb.phant0m.shared.ShizukuApiConstant.ATTACH_APPLICATION_API_VERSION
+import frb.phant0m.shared.ShizukuApiConstant.ATTACH_APPLICATION_PACKAGE_NAME
+import frb.phant0m.shared.ShizukuApiConstant.BINDER_TRANSACTION_transact
+import frb.phant0m.shared.ShizukuApiConstant.SHIZUKU_SERVER_VERSION
 import moe.shizuku.server.IShizukuApplication
 import moe.shizuku.server.IShizukuServiceConnection
 import rikka.hidden.compat.PackageManagerApis
@@ -36,7 +36,7 @@ import kotlin.system.exitProcess
 
 abstract class Service<UserServiceMgr : UserServiceManager,
         ClientMgr : ClientManager<ConfigMgr>,
-        ConfigMgr : ConfigManager> : IAxeronService.Stub(), ShizukuIntercept {
+        ConfigMgr : ConfigManager> : IPhant0mService.Stub(), ShizukuIntercept {
 
     var userServiceManager: UserServiceMgr
     var configManager: ConfigMgr
@@ -53,7 +53,7 @@ abstract class Service<UserServiceMgr : UserServiceManager,
     abstract fun onCreateConfigManager(): ConfigMgr
 
     companion object {
-        protected const val TAG: String = "AxeronService"
+        protected const val TAG: String = "Phant0mService"
 
         @JvmStatic
         protected val isRoot = Os.getuid() == 0
@@ -68,7 +68,7 @@ abstract class Service<UserServiceMgr : UserServiceManager,
     }
 
     init {
-        RishConfig.init(AxeronApiConstant.server.BINDER_DESCRIPTOR, 30000)
+        RishConfig.init(Phant0mApiConstant.server.BINDER_DESCRIPTOR, 30000)
         userServiceManager = onCreateUserServiceManager()
         configManager = onCreateConfigManager()
         clientManager = onCreateClientManager()
@@ -333,7 +333,7 @@ abstract class Service<UserServiceMgr : UserServiceManager,
     @Throws(RemoteException::class)
     override fun getPlugins(): ParcelableListSlice<PluginInfo?>? {
         val pluginsPath =
-            PathHelper.getWorkingPath(isRoot, AxeronApiConstant.folder.PARENT_PLUGIN).absolutePath
+            PathHelper.getWorkingPath(isRoot, Phant0mApiConstant.folder.PARENT_PLUGIN).absolutePath
         val plugins = readAllPlugin(pluginsPath)
         return ParcelableListSlice<PluginInfo?>(plugins)
     }
@@ -344,7 +344,7 @@ abstract class Service<UserServiceMgr : UserServiceManager,
             File(
                 PathHelper.getWorkingPath(
                     isRoot,
-                    AxeronApiConstant.folder.PARENT_PLUGIN
+                    Phant0mApiConstant.folder.PARENT_PLUGIN
                 ).absolutePath, id
             )
         return getPluginByDir(dir)
@@ -384,7 +384,7 @@ abstract class Service<UserServiceMgr : UserServiceManager,
         val pluginId = moduleProp.id
         val updateDir =
             File(
-                PathHelper.getWorkingPath(isRoot, AxeronApiConstant.folder.PARENT_PLUGIN_UPDATE),
+                PathHelper.getWorkingPath(isRoot, Phant0mApiConstant.folder.PARENT_PLUGIN_UPDATE),
                 pluginId
             )
         val updateFiles = updateDir.listFiles()?.map { it.name }?.toSet() ?: emptySet()
@@ -497,11 +497,11 @@ abstract class Service<UserServiceMgr : UserServiceManager,
     @Throws(RemoteException::class)
     override fun onTransact(code: Int, data: Parcel, reply: Parcel?, flags: Int): Boolean {
         if (code == BINDER_TRANSACTION_transact) {
-            data.enforceInterface(AxeronApiConstant.server.BINDER_DESCRIPTOR)
+            data.enforceInterface(Phant0mApiConstant.server.BINDER_DESCRIPTOR)
             transactRemote(data, reply, flags)
             return true
         } else if (code == 14) {
-            data.enforceInterface(AxeronApiConstant.server.BINDER_DESCRIPTOR)
+            data.enforceInterface(Phant0mApiConstant.server.BINDER_DESCRIPTOR)
             val binder = data.readStrongBinder()
             val packageName = data.readString()
             val args = Bundle()

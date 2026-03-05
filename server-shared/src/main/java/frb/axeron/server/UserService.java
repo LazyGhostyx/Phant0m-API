@@ -1,4 +1,4 @@
-package frb.axeron.server;
+package xyz.lazyghosty.phant0m.server;
 
 import android.app.ActivityThread;
 import android.content.Context;

@@ -1,13 +1,13 @@
-package frb.axeron.api.core
+package xyz.lazyghosty.phant0m.api.core
 
 import java.io.File
 
 object Starter {
 
-    const val KEY_PAIR = "axeron_adb_key_pair"
+    const val KEY_PAIR = "phant0m_adb_key_pair"
 
     private val starterFile =
-        File(Engine.application.applicationInfo.nativeLibraryDir, "libaxeron.so")
+        File(Engine.application.applicationInfo.nativeLibraryDir, "libphant0m.so")
 
     val userCommand: String = starterFile.absolutePath
 

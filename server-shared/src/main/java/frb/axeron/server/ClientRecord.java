@@ -1,10 +1,10 @@
-package frb.axeron.server;
+package xyz.lazyghosty.phant0m.server;
 
-import static frb.axeron.shared.ShizukuApiConstant.REQUEST_PERMISSION_REPLY_ALLOWED;
+import static frb.phant0m.shared.ShizukuApiConstant.REQUEST_PERMISSION_REPLY_ALLOWED;
 
 import android.os.Bundle;
 
-import frb.axeron.server.util.Logger;
+import frb.phant0m.server.util.Logger;
 import moe.shizuku.server.IShizukuApplication;
 
 public class ClientRecord {

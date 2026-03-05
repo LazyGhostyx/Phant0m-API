@@ -1,6 +1,6 @@
-package frb.axeron;
+package xyz.lazyghosty.phant0m;
 
-import static frb.axeron.shared.AxeronApiConstant.server.TYPE_ENV;
+import static frb.phant0m.shared.Phant0mApiConstant.server.TYPE_ENV;
 
 import android.app.IActivityManager;
 import android.content.Intent;
@@ -22,15 +22,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import frb.axeron.server.IAxeronService;
-import frb.axeron.server.ServerConstants;
-import frb.axeron.shared.AxeronApiConstant;
+import frb.phant0m.server.IPhant0mService;
+import frb.phant0m.server.ServerConstants;
+import frb.phant0m.shared.Phant0mApiConstant;
 import rikka.hidden.compat.PackageManagerApis;
 
 public class RuntimeLoader {
-    private static final Long VERSION_CODE  = AxeronApiConstant.server.VERSION_CODE;
+    private static final Long VERSION_CODE  = Phant0mApiConstant.server.VERSION_CODE;
     private static final CountDownLatch latch = new CountDownLatch(1);
-    private static final AtomicReference<IAxeronService> axeronService = new AtomicReference<>();
+    private static final AtomicReference<IPhant0mService> phant0mService = new AtomicReference<>();
     private static final AtomicReference<String> sourceDir = new AtomicReference<>();
     private static AtomicReference<String[]> env = null;
     private static final Binder replyBinder = new Binder() {
@@ -42,10 +42,10 @@ public class RuntimeLoader {
                 String source = data.readString();
                 if (versionCode < VERSION_CODE) abort("Server version is too old");
                 if (binder != null) {
-                    axeronService.set(IAxeronService.Stub.asInterface(binder));
+                    phant0mService.set(IPhant0mService.Stub.asInterface(binder));
                     sourceDir.set(source);
                     try {
-                        env = new AtomicReference<>(axeronService.get().getEnvironment(TYPE_ENV).getEnv());
+                        env = new AtomicReference<>(phant0mService.get().getEnvironment(TYPE_ENV).getEnv());
                     } catch (RemoteException e) {
                         abort("Error: " + e.getMessage());
                     }
@@ -128,7 +128,7 @@ public class RuntimeLoader {
                 argv = newArgv;
             }
 
-            RemoteProcess process = new RemoteProcess(axeronService.get().newProcess(argv, env.get(), null));
+            RemoteProcess process = new RemoteProcess(phant0mService.get().newProcess(argv, env.get(), null));
             int pid = Os.getpid();
             new Thread(() -> {
                 try (
@@ -196,8 +196,8 @@ public class RuntimeLoader {
     }
 
     public void start() throws RemoteException {
-        if (!axeronService.get().checkSelfPermission()) {
-            axeronService.get().requestPermission(0);
+        if (!phant0mService.get().checkSelfPermission()) {
+            phant0mService.get().requestPermission(0);
             abort("Permission denied.");
             return;
         }

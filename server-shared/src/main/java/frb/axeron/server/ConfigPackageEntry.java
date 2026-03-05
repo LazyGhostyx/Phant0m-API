@@ -1,6 +1,6 @@
-package frb.axeron.server;
+package xyz.lazyghosty.phant0m.server;
 
-import frb.axeron.server.util.Logger;
+import frb.phant0m.server.util.Logger;
 
 public abstract class ConfigPackageEntry {
 

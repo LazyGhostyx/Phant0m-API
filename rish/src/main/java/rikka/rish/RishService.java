@@ -24,7 +24,7 @@ public abstract class RishService {
     private void createHost(
             String[] args,
             String[] env,
-            String[] axeronEnv,
+            String[] phant0mEnv,
             String dir,
             byte tty,
             ParcelFileDescriptor stdin,
@@ -51,7 +51,7 @@ public abstract class RishService {
             }
         }
         if (!allowEnv) {
-            env = axeronEnv;
+            env = phant0mEnv;
         }
 
         RishHost host = new RishHost(args, env, dir, tty, stdin, stdout, stderr);
@@ -87,7 +87,7 @@ public abstract class RishService {
 
     public abstract void enforceCallingPermission(String func);
 
-    public boolean onTransact(int code, @NonNull Parcel data, @Nullable Parcel reply, int flags, String[] axeronEnv) {
+    public boolean onTransact(int code, @NonNull Parcel data, @Nullable Parcel reply, int flags, String[] phant0mEnv) {
         if (code == RishConfig.getTransactionCode(RishConfig.TRANSACTION_createHost)) {
             Log.d(TAG, "TRANSACTION_createHost");
 
@@ -111,7 +111,7 @@ public abstract class RishService {
             String[] args = data.createStringArray();
             String[] env = data.createStringArray();
             String dir = data.readString();
-            createHost(args, env, axeronEnv, dir, tty, stdin, stdout, stderr);
+            createHost(args, env, phant0mEnv, dir, tty, stdin, stdout, stderr);
             reply.writeNoException();
             return true;
         } else if (code == RishConfig.getTransactionCode(RishConfig.TRANSACTION_setWindowSize)) {

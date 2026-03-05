@@ -1,7 +1,7 @@
-package frb.axeron.server
+package xyz.lazyghosty.phant0m.server
 
-import frb.axeron.shared.AxeronApiConstant
-import frb.axeron.shared.PathHelper
+import frb.phant0m.shared.Phant0mApiConstant
+import frb.phant0m.shared.PathHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -12,10 +12,10 @@ import kotlin.concurrent.withLock
 
 class EnvironmentManager(val isRoot: Boolean = false) {
 
-    private val fileName = "axeron_env.json"
+    private val fileName = "phant0m_env.json"
     private val file: File
         get() = File(
-            PathHelper.getWorkingPath(isRoot, AxeronApiConstant.folder.PARENT),
+            PathHelper.getWorkingPath(isRoot, Phant0mApiConstant.folder.PARENT),
             fileName
         )
     private val lock = ReentrantLock()

@@ -1,4 +1,4 @@
-package frb.axeron.api.utils
+package xyz.lazyghosty.phant0m.api.utils
 
 object AnsiFilter {
     val ANSI_CLEAR_REGEX =

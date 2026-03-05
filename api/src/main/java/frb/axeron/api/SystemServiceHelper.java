@@ -1,4 +1,4 @@
-package frb.axeron.api;
+package xyz.lazyghosty.phant0m.api;
 
 import android.annotation.SuppressLint;
 import android.os.IBinder;
@@ -56,7 +56,7 @@ public class SystemServiceHelper {
      * @param className  class name such as "android.content.pm.IPackageManager$Stub"
      * @param methodName method name such as "getInstalledPackages"
      * @return transaction code, or <code>null</code> if the class or the method doesn't exist
-     * @deprecated Use {@link AxeronBinderWrapper} instead
+     * @deprecated Use {@link Phant0mBinderWrapper} instead
      */
     @Deprecated
     public static Integer getTransactionCode(@NonNull String className, @NonNull String methodName) {
@@ -100,14 +100,14 @@ public class SystemServiceHelper {
     }
 
     /**
-     * Obtain a new data parcel for {@link Axeron#transactRemote(Parcel, Parcel, int)} (Parcel, Parcel, int)}.
+     * Obtain a new data parcel for {@link Phant0m#transactRemote(Parcel, Parcel, int)} (Parcel, Parcel, int)}.
      *
      * @param serviceName   system service name
      * @param interfaceName class name for reflection
      * @param methodName    method name for reflection
      * @return data parcel
      * @throws NullPointerException can't get system service or transaction code
-     * @deprecated Use {@link AxeronBinderWrapper} instead
+     * @deprecated Use {@link Phant0mBinderWrapper} instead
      */
     @Deprecated
     public static Parcel obtainParcel(@NonNull String serviceName, @NonNull String interfaceName, @NonNull String methodName) {
@@ -115,7 +115,7 @@ public class SystemServiceHelper {
     }
 
     /**
-     * Obtain a new data parcel for {@link Axeron#transactRemote(Parcel, Parcel, int)}.
+     * Obtain a new data parcel for {@link Phant0m#transactRemote(Parcel, Parcel, int)}.
      *
      * @param serviceName   system service name
      * @param interfaceName interface name
@@ -123,10 +123,10 @@ public class SystemServiceHelper {
      * @param methodName    method name for reflection
      * @return data parcel
      * @throws NullPointerException can't get system service or transaction code
-     * @deprecated Use {@link AxeronBinderWrapper} instead
+     * @deprecated Use {@link Phant0mBinderWrapper} instead
      */
     @Deprecated
     public static Parcel obtainParcel(@NonNull String serviceName, @NonNull String interfaceName, @NonNull String className, @NonNull String methodName) {
-        throw new UnsupportedOperationException("Direct use of Axeron#transactRemote is no longer supported, please use AxeronBinderWrapper");
+        throw new UnsupportedOperationException("Direct use of Phant0m#transactRemote is no longer supported, please use Phant0mBinderWrapper");
     }
 }

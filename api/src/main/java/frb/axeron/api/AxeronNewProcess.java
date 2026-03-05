@@ -1,4 +1,4 @@
-package frb.axeron.api;
+package xyz.lazyghosty.phant0m.api;
 
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
@@ -16,33 +16,33 @@ import java.util.Set;
 
 import moe.shizuku.server.IRemoteProcess;
 
-public class AxeronNewProcess extends Process implements Parcelable {
+public class Phant0mNewProcess extends Process implements Parcelable {
 
-    public static final Creator<AxeronNewProcess> CREATOR = new Creator<AxeronNewProcess>() {
+    public static final Creator<Phant0mNewProcess> CREATOR = new Creator<Phant0mNewProcess>() {
         @Override
-        public AxeronNewProcess createFromParcel(Parcel in) {
-            return new AxeronNewProcess(in);
+        public Phant0mNewProcess createFromParcel(Parcel in) {
+            return new Phant0mNewProcess(in);
         }
 
         @Override
-        public AxeronNewProcess[] newArray(int size) {
-            return new AxeronNewProcess[size];
+        public Phant0mNewProcess[] newArray(int size) {
+            return new Phant0mNewProcess[size];
         }
     };
-    private static final Set<AxeronNewProcess> CACHE = Collections.synchronizedSet(new ArraySet<>());
-    private static final String TAG = "AxeronNewProcess";
+    private static final Set<Phant0mNewProcess> CACHE = Collections.synchronizedSet(new ArraySet<>());
+    private static final String TAG = "Phant0mNewProcess";
     private IRemoteProcess remote;
     private OutputStream os;
     private InputStream is;
 
-    public AxeronNewProcess(IRemoteProcess remote) {
+    public Phant0mNewProcess(IRemoteProcess remote) {
         this.remote = remote;
         try {
             this.remote.asBinder().linkToDeath(() -> {
                 this.remote = null;
                 Log.v(TAG, "remote process is dead");
 
-                CACHE.remove(AxeronNewProcess.this);
+                CACHE.remove(Phant0mNewProcess.this);
             }, 0);
         } catch (RemoteException e) {
             Log.e(TAG, "linkToDeath", e);
@@ -52,7 +52,7 @@ public class AxeronNewProcess extends Process implements Parcelable {
         CACHE.add(this);
     }
 
-    protected AxeronNewProcess(Parcel in) {
+    protected Phant0mNewProcess(Parcel in) {
         remote = IRemoteProcess.Stub.asInterface(in.readStrongBinder());
     }
 

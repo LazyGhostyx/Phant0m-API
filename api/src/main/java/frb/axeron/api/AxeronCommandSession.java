@@ -1,4 +1,4 @@
-package frb.axeron.api;
+package xyz.lazyghosty.phant0m.api;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class AxeronCommandSession {
+public class Phant0mCommandSession {
     private final AtomicBoolean isProcessRunning = new AtomicBoolean(false);
     private final AtomicInteger pid = new AtomicInteger(-1);
     private final AtomicInteger exitCode = new AtomicInteger(-1);
@@ -25,7 +25,7 @@ public class AxeronCommandSession {
     Handler finishHandler = new Handler(Looper.getMainLooper());
     private String injectEnv;
     private String injectExport;
-    private AxeronNewProcess process;
+    private Phant0mNewProcess process;
     private BufferedWriter writer;
     private BufferedReader bufferedReader;
     private BufferedReader bufferedError;
@@ -52,7 +52,7 @@ public class AxeronCommandSession {
 
         if (useBusybox) {
             return new String[]{
-                    AxeronPluginService.INSTANCE.getBUSYBOX(),
+                    Phant0mPluginService.INSTANCE.getBUSYBOX(),
                     "setsid",
                     "sh",
                     "-c",
@@ -109,7 +109,7 @@ public class AxeronCommandSession {
     }
 
     public void killSession() {
-        Axeron.newProcess("kill -TERM -" + pid);
+        Phant0m.newProcess("kill -TERM -" + pid);
         destroy();
     }
 
@@ -117,12 +117,12 @@ public class AxeronCommandSession {
         destroy(); // bersihkan jika ada
         exitCode.set(0);
 
-        process = Axeron.newProcess(getQuickCmd(
+        process = Phant0m.newProcess(getQuickCmd(
                         command,
                         isCompatModeEnabled,
                         true
                 ),
-                Axeron.getEnvironment(),
+                Phant0m.getEnvironment(),
                 null);
         writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
         bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));

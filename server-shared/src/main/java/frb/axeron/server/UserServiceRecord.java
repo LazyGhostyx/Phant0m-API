@@ -1,7 +1,7 @@
-package frb.axeron.server;
+package xyz.lazyghosty.phant0m.server;
 
-import static frb.axeron.shared.AxeronApiConstant.server.BINDER_DESCRIPTOR;
-import static frb.axeron.shared.ShizukuApiConstant.USER_SERVICE_TRANSACTION_destroy;
+import static frb.phant0m.shared.Phant0mApiConstant.server.BINDER_DESCRIPTOR;
+import static frb.phant0m.shared.ShizukuApiConstant.USER_SERVICE_TRANSACTION_destroy;
 
 import android.os.Binder;
 import android.os.IBinder;
@@ -12,8 +12,8 @@ import java.io.IOException;
 import java.util.Locale;
 import java.util.UUID;
 
-import frb.axeron.server.util.HandlerUtil;
-import frb.axeron.server.util.Logger;
+import frb.phant0m.server.util.HandlerUtil;
+import frb.phant0m.server.util.Logger;
 import moe.shizuku.server.IShizukuServiceConnection;
 public abstract class UserServiceRecord {
 

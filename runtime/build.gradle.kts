@@ -5,10 +5,10 @@ plugins {
 }
 
 android {
-    namespace = "frb.axeron.runtime"
+    namespace = "frb.phant0m.runtime"
 
     defaultConfig {
-        applicationId = "frb.axeron.runtime"
+        applicationId = "frb.phant0m.runtime"
     }
 
     buildTypes {

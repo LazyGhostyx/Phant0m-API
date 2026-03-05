@@ -1,12 +1,12 @@
-package frb.axeron.server.api
+package xyz.lazyghosty.phant0m.server.api
 
 import android.content.Intent
 import android.content.pm.PackageInfo
 import android.os.Bundle
 import android.os.IBinder
 import android.os.Parcel
-import frb.axeron.server.Environment
-import frb.axeron.server.ServerInfo
+import frb.phant0m.server.Environment
+import frb.phant0m.server.ServerInfo
 import moe.shizuku.server.IRemoteProcess
 import moe.shizuku.server.IShizukuApplication
 import moe.shizuku.server.IShizukuServiceConnection

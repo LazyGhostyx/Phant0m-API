@@ -5,7 +5,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
-import frb.axeron.server.IAxeronService;
+import frb.phant0m.server.IPhant0mService;
 
 public class RishConfig {
 
@@ -13,21 +13,21 @@ public class RishConfig {
     static final int TRANSACTION_setWindowSize = 1;
     static final int TRANSACTION_getExitCode = 2;
     private static final String TAG = "RISHConfig";
-    private static IAxeronService axeronService;
+    private static IPhant0mService phant0mService;
     private static String interfaceToken;
     private static int transactionCodeStart;
     private static String libraryPath;
 
     static IBinder getBinder() {
-        return axeronService.asBinder();
+        return phant0mService.asBinder();
     }
 
-    static IAxeronService getAxeronService() {
-        return axeronService;
+    static IPhant0mService getPhant0mService() {
+        return phant0mService;
     }
 
     static RemoteProcess newProcess(String[] cmd) throws RemoteException {
-        return new RemoteProcess(getAxeronService().newProcess(cmd, getAxeronService().getEnvironment(0).getEnv(), null));
+        return new RemoteProcess(getPhant0mService().newProcess(cmd, getPhant0mService().getEnvironment(0).getEnv(), null));
     }
 
     static String getInterfaceToken() {
@@ -60,7 +60,7 @@ public class RishConfig {
 
     public static void init(IBinder binder, String interfaceToken, int transactionCodeStart) {
         Log.d(TAG, "init (client) " + binder + " " + interfaceToken + " " + transactionCodeStart);
-        RishConfig.axeronService = IAxeronService.Stub.asInterface(binder);
+        RishConfig.phant0mService = IPhant0mService.Stub.asInterface(binder);
         RishConfig.interfaceToken = interfaceToken;
         RishConfig.transactionCodeStart = transactionCodeStart;
         loadLibrary();

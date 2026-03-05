@@ -1,12 +1,12 @@
-package frb.axeron.api;
+package xyz.lazyghosty.phant0m.api;
 
 
 import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP_PREFIX;
-import static frb.axeron.shared.AxeronApiConstant.server.TYPE_ENV;
-import static frb.axeron.shared.ShizukuApiConstant.BINDER_TRANSACTION_transact;
-import static frb.axeron.shared.ShizukuApiConstant.BIND_APPLICATION_PERMISSION_GRANTED;
-import static frb.axeron.shared.ShizukuApiConstant.BIND_APPLICATION_SHOULD_SHOW_REQUEST_PERMISSION_RATIONALE;
-import static frb.axeron.shared.ShizukuApiConstant.REQUEST_PERMISSION_REPLY_ALLOWED;
+import static frb.phant0m.shared.Phant0mApiConstant.server.TYPE_ENV;
+import static frb.phant0m.shared.ShizukuApiConstant.BINDER_TRANSACTION_transact;
+import static frb.phant0m.shared.ShizukuApiConstant.BIND_APPLICATION_PERMISSION_GRANTED;
+import static frb.phant0m.shared.ShizukuApiConstant.BIND_APPLICATION_SHOULD_SHOW_REQUEST_PERMISSION_RATIONALE;
+import static frb.phant0m.shared.ShizukuApiConstant.REQUEST_PERMISSION_REPLY_ALLOWED;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -26,24 +26,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import frb.axeron.api.core.AxeronSettings;
-import frb.axeron.server.Environment;
-import frb.axeron.server.IAxeronService;
-import frb.axeron.server.PluginInfo;
-import frb.axeron.shared.AxeronApiConstant;
+import frb.phant0m.api.core.Phant0mSettings;
+import frb.phant0m.server.Environment;
+import frb.phant0m.server.IPhant0mService;
+import frb.phant0m.server.PluginInfo;
+import frb.phant0m.shared.Phant0mApiConstant;
 import moe.shizuku.server.IShizukuApplication;
 import moe.shizuku.server.IShizukuService;
 
-public class Axeron {
+public class Phant0m {
     private static final List<ListenerHolder<OnBinderReceivedListener>> RECEIVED_LISTENERS = new ArrayList<>();
     private static final List<ListenerHolder<OnBinderDeadListener>> DEAD_LISTENERS = new ArrayList<>();
     private static final List<ListenerHolder<OnRequestPermissionResultListener>> PERMISSION_LISTENERS = new ArrayList<>();
 
-    protected static String TAG = "AxeronApplication";
+    protected static String TAG = "Phant0mApplication";
     private static final Handler MAIN_HANDLER = new Handler(Looper.getMainLooper());
     private static IBinder binder;
-    private static IAxeronService service;
-    private static AxeronInfo axeronInfo = null;
+    private static IPhant0mService service;
+    private static Phant0mInfo phant0mInfo = null;
     private static boolean binderReady = false;
 
     private static boolean permissionGranted = false;
@@ -63,9 +63,9 @@ public class Axeron {
             scheduleBinderReceivedListeners();
 
             if (isFirstInit(false)
-                    || AxeronSettings.getEnableIgniteRelog()) {
+                    || Phant0mSettings.getEnableIgniteRelog()) {
                 Log.d(TAG, "igniteService");
-                AxeronPluginService.igniteService();
+                Phant0mPluginService.igniteService();
             }
         }
 
@@ -235,7 +235,7 @@ public class Axeron {
         if (newBinder == null) {
             binder = null;
             service = null;
-            axeronInfo = null;
+            phant0mInfo = null;
 
             scheduleBinderDeadListeners();
         } else {
@@ -245,7 +245,7 @@ public class Axeron {
                 binder.unlinkToDeath(DEATH_RECIPIENT, 0);
             }
             binder = newBinder;
-            service = IAxeronService.Stub.asInterface(newBinder);
+            service = IPhant0mService.Stub.asInterface(newBinder);
 
             try {
                 binder.linkToDeath(DEATH_RECIPIENT, 0);
@@ -268,7 +268,7 @@ public class Axeron {
         Parcel data = Parcel.obtain();
         Parcel reply = Parcel.obtain();
         try {
-            data.writeInterfaceToken(IAxeronService.DESCRIPTOR);
+            data.writeInterfaceToken(IPhant0mService.DESCRIPTOR);
             data.writeStrongBinder(SHIZUKU_APPLICATION.asBinder());
             data.writeString(packageName);
             binder.transact(14, data, reply, 0);
@@ -308,7 +308,7 @@ public class Axeron {
     }
 
     @NonNull
-    protected static IAxeronService requireService() {
+    protected static IPhant0mService requireService() {
         if (service == null) {
             throw new IllegalStateException("binder haven't been received");
         }
@@ -324,18 +324,18 @@ public class Axeron {
         return binder;
     }
 
-    public static AxeronFileService newFileService() {
+    public static Phant0mFileService newFileService() {
         try {
-            return new AxeronFileService(requireService().getFileService());
+            return new Phant0mFileService(requireService().getFileService());
         } catch (RemoteException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static AxeronNewProcess newProcess(@NonNull String[] cmd, @Nullable Environment env, @Nullable String dir) {
+    public static Phant0mNewProcess newProcess(@NonNull String[] cmd, @Nullable Environment env, @Nullable String dir) {
         try {
 
-            return new AxeronNewProcess(requireService().newProcess(cmd, env != null ? env.getEnv() : null, dir));
+            return new Phant0mNewProcess(requireService().newProcess(cmd, env != null ? env.getEnv() : null, dir));
         } catch (RemoteException | NullPointerException e) {
 //            Log.d(TAG, "Failed to execute command", e);
             throw new RuntimeException("Failed to execute command", e);
@@ -345,12 +345,12 @@ public class Axeron {
         onBinderReceived(null, null);
     };
 
-    public static AxeronNewProcess newProcess(@NonNull String cmd) {
+    public static Phant0mNewProcess newProcess(@NonNull String cmd) {
         return newProcess(new String[]{"sh", "-c", cmd});
     }
 
-    public static AxeronNewProcess newProcess(@NonNull String[] cmd) {
-        return newProcess(cmd, Axeron.getEnvironment(TYPE_ENV), null);
+    public static Phant0mNewProcess newProcess(@NonNull String[] cmd) {
+        return newProcess(cmd, Phant0m.getEnvironment(TYPE_ENV), null);
     }
 
     public static void destroy() {
@@ -361,19 +361,19 @@ public class Axeron {
             }
             binder = null;
             service = null;
-            axeronInfo = null;
+            phant0mInfo = null;
             scheduleBinderDeadListeners();
         }
     }
 
-    public static AxeronInfo getAxeronInfo() {
-        if (axeronInfo != null) return axeronInfo;
+    public static Phant0mInfo getPhant0mInfo() {
+        if (phant0mInfo != null) return phant0mInfo;
         try {
-            axeronInfo = new AxeronInfo(requireService().getServerInfo());
+            phant0mInfo = new Phant0mInfo(requireService().getServerInfo());
         } catch (Exception e) {
-            return new AxeronInfo();
+            return new Phant0mInfo();
         }
-        return axeronInfo;
+        return phant0mInfo;
 
     }
 
@@ -405,7 +405,7 @@ public class Axeron {
         try {
             requireService().asBinder().transact(BINDER_TRANSACTION_transact, data, reply, flags);
         } catch (RemoteException e) {
-            throw rethrowAsRuntimeException("Axeron", e);
+            throw rethrowAsRuntimeException("Phant0m", e);
         }
     }
 
@@ -438,7 +438,7 @@ public class Axeron {
     }
 
     public static int checkRemotePermission(String permission) {
-        if (getAxeronInfo().isRoot()) return PackageManager.PERMISSION_GRANTED;
+        if (getPhant0mInfo().isRoot()) return PackageManager.PERMISSION_GRANTED;
         try {
             return requireService().checkPermission(permission);
         } catch (RemoteException e) {
@@ -447,7 +447,7 @@ public class Axeron {
     }
 
     public static boolean isUpdated() {
-        return AxeronApiConstant.server.VERSION_CODE <= Axeron.getAxeronInfo().getServerInfo().getVersionCode();
+        return Phant0mApiConstant.server.VERSION_CODE <= Phant0m.getPhant0mInfo().getServerInfo().getVersionCode();
     }
 
     public interface OnBinderReceivedListener {

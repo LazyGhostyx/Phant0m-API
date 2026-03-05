@@ -1,4 +1,4 @@
-package frb.axeron.api.utils;
+package xyz.lazyghosty.phant0m.api.utils;
 
 import android.content.SharedPreferences;
 

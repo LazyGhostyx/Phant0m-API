@@ -1,4 +1,4 @@
-package frb.axeron.provider;
+package xyz.lazyghosty.phant0m.provider;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -15,11 +15,11 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import frb.axeron.api.Axeron;
-import frb.axeron.api.core.AxeronSettings;
+import frb.phant0m.api.Phant0m;
+import frb.phant0m.api.core.Phant0mSettings;
 import moe.shizuku.api.BinderContainer;
 
-public class AxeronProvider extends ContentProvider {
+public class Phant0mProvider extends ContentProvider {
     // For receive Binder from Shizuku
     public static final String METHOD_SEND_BINDER = "sendBinder";
     // For share Binder between processes
@@ -77,12 +77,12 @@ public class AxeronProvider extends ContentProvider {
             container = extras.getParcelable(EXTRA_BINDER);
         }
 
-        if (!Axeron.pingBinder()) {
+        if (!Phant0m.pingBinder()) {
             if (container != null && container.binder != null) {
                 Log.d(TAG, "binder received");
 
-                AxeronSettings.initialize(getContext());
-                Axeron.onBinderReceived(container.binder, getContext().getPackageName());
+                Phant0mSettings.initialize(getContext());
+                Phant0m.onBinderReceived(container.binder, getContext().getPackageName());
 
                 Log.d(TAG, "broadcast binder");
                 Intent intent = new Intent(ACTION_BINDER_RECEIVED)
@@ -94,7 +94,7 @@ public class AxeronProvider extends ContentProvider {
 
     private boolean handleGetBinder(@NonNull Bundle reply) {
         // Other processes in the same app can read the provider without permission
-        IBinder binder = Axeron.getBinder();
+        IBinder binder = Phant0m.getBinder();
         if (binder == null || !binder.pingBinder())
             return false;
 

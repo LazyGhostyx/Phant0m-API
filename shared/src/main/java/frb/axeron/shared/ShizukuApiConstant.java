@@ -1,4 +1,4 @@
-package frb.axeron.shared;
+package xyz.lazyghosty.phant0m.shared;
 
 public class ShizukuApiConstant {
     public static final int SHIZUKU_SERVER_VERSION = 13;

@@ -20,7 +20,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Axeron-API"
+rootProject.name = "Phant0m-API"
 include(":api")
 include(":aidl")
 include(":shell")

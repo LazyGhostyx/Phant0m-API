@@ -1,4 +1,4 @@
-package frb.axeron;
+package xyz.lazyghosty.phant0m;
 
 import android.app.IActivityManager;
 import android.content.Intent;
@@ -20,7 +20,7 @@ import java.io.File;
 import java.util.Objects;
 
 import dalvik.system.BaseDexClassLoader;
-import frb.axeron.server.ServerConstants;
+import frb.phant0m.server.ServerConstants;
 import rikka.hidden.compat.PackageManagerApis;
 import stub.dalvik.system.VMRuntimeHidden;
 
@@ -55,7 +55,7 @@ public class ShellLoader {
         data.putBinder("binder", receiverBinder);
 
         Intent intent = new Intent(ServerConstants.REQUEST_BINDER_AXRUNTIME)
-                .setPackage("frb.axeron.manager")
+                .setPackage("xyz.lazyghosty.phant0m")
                 .addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES)
                 .putExtra("data", data);
 
@@ -95,7 +95,7 @@ public class ShellLoader {
 
         try {
             var classLoader = new BaseDexClassLoader(sourceDir, null, librarySearchPath, ClassLoader.getSystemClassLoader());
-            Class<?> cls = classLoader.loadClass("frb.axeron.server.shell.Shell");
+            Class<?> cls = classLoader.loadClass("frb.phant0m.server.shell.Shell");
             cls.getDeclaredMethod("main", String[].class, String.class, IBinder.class, Handler.class)
                     .invoke(null, args, callingPackage, binder, handler);
         } catch (ClassNotFoundException tr) {
@@ -143,8 +143,8 @@ public class ShellLoader {
 
         handler.postDelayed(() -> abort(
 //                String.format(
-//                        "Request timeout. The connection between the current app (%1$s) and AxManager app may be blocked by your system. " +
-//                                "Please disable all battery optimization features for both current app (%1$s) and AxManager app.",
+//                        "Request timeout. The connection between the current app (%1$s) and Phant0m app may be blocked by your system. " +
+//                                "Please disable all battery optimization features for both current app (%1$s) and Phant0m app.",
 //                        packageName)
                 "Request timeout. No Response from Server"
         ), 5000);

@@ -1,10 +1,10 @@
-package frb.axeron.api.core
+package xyz.lazyghosty.phant0m.api.core
 
 import android.app.Application
 import android.content.Context
 import android.os.Process
 import android.util.Log
-import frb.axeron.api.Axeron
+import frb.phant0m.api.Phant0m
 import java.io.File
 import kotlin.system.exitProcess
 
@@ -41,9 +41,9 @@ open class Engine: Application() {
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             // log error
             Log.e("Engine", "Uncaught exception in thread ${thread.name}", throwable)
-            Log.i("Engine", "Force stop AxeronService")
-            if (Axeron.pingBinder()) {
-                Axeron.destroy()
+            Log.i("Engine", "Force stop Phant0mService")
+            if (Phant0m.pingBinder()) {
+                Phant0m.destroy()
             }
             // contoh: simpan ke file log
             saveCrashLog(throwable)

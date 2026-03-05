@@ -1,4 +1,4 @@
-package frb.axeron.server.api;
+package xyz.lazyghosty.phant0m.server.api;
 
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
@@ -7,8 +7,8 @@ import android.os.RemoteException;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import frb.axeron.server.util.Logger;
-import frb.axeron.server.util.ParcelFileDescriptorUtil;
+import frb.phant0m.server.util.Logger;
+import frb.phant0m.server.util.ParcelFileDescriptorUtil;
 import moe.shizuku.server.IRemoteProcess;
 
 public class RemoteProcessHolder extends IRemoteProcess.Stub {

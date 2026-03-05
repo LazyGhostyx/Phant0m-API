@@ -1,12 +1,12 @@
-package frb.axeron.api
+package xyz.lazyghosty.phant0m.api
 
 import android.os.Parcelable
-import frb.axeron.server.ServerInfo
-import frb.axeron.shared.AxeronApiConstant
+import frb.phant0m.server.ServerInfo
+import frb.phant0m.shared.Phant0mApiConstant
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class AxeronInfo(
+data class Phant0mInfo(
     val serverInfo: ServerInfo = ServerInfo()
 ) : Parcelable {
 
@@ -15,11 +15,11 @@ data class AxeronInfo(
     }
 
     fun isRunning(): Boolean {
-        return Axeron.pingBinder() && AxeronApiConstant.server.VERSION_CODE <= getVersionCode()
+        return Phant0m.pingBinder() && Phant0mApiConstant.server.VERSION_CODE <= getVersionCode()
     }
 
     fun isNeedUpdate(): Boolean {
-        return AxeronApiConstant.server.VERSION_CODE > getVersionCode() && Axeron.pingBinder()
+        return Phant0mApiConstant.server.VERSION_CODE > getVersionCode() && Phant0m.pingBinder()
     }
 
     fun isNeedExtraStep(): Boolean {
